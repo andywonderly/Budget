@@ -1,0 +1,29 @@
+﻿@model Budget.Models.DashboardViewModel
+
+@{
+    ViewBag.Title = "Home Page";
+    Layout = "~/Views/Shared/TemplateLayout.cshtml";
+}
+
+<div class="col-md-4">
+    <div class="row">
+        <h3>Your Households</h3>
+    </div>
+    @Html.ActionLink("Create new household","Create","Households")
+    @if (Model.ActiveHousehold != null)
+    {
+            @*DROPDOWN FOR OTHER HOUSEHOLDS*@
+        @*Browser cookie for last visited household or if a default household is set*@
+            <div class="row DashboardHousehold">
+                @Model.ActiveHousehold.Name
+                Members: (@Html.Raw(Model.ActiveHousehold.Members.Count))
+                Accounts: (@Html.Raw(Model.ActiveHousehold.Accounts.Count))
+            </div>
+    }
+    else
+    {
+        <div class="row">
+            You are not a member of any households.
+        </div>
+    }
+</div>
