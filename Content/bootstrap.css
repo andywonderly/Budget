@@ -2259,6 +2259,12 @@ fieldset[disabled] .btn-success.active {
   border-color: #46b8da;
 }
 
+.btn-create {
+  color: red;
+  background-color: black;
+  border-color: #46b8da;
+}
+
 .btn-info:hover,
 .btn-info:focus,
 .btn-info:active,

@@ -9,15 +9,15 @@
     <div class="row">
         <h3>Your Households</h3>
     </div>
-    @Html.ActionLink("Create new household","Create","Households")
-    @if (Model.ActiveHousehold != null)
+    @Html.ActionLink("Create new household","CreateJoinHousehold","Home")
+    @if (Model.Household != null)
     {
             @*DROPDOWN FOR OTHER HOUSEHOLDS*@
         @*Browser cookie for last visited household or if a default household is set*@
             <div class="row DashboardHousehold">
-                @Model.ActiveHousehold.Name
-                Members: (@Html.Raw(Model.ActiveHousehold.Members.Count))
-                Accounts: (@Html.Raw(Model.ActiveHousehold.Accounts.Count))
+                @Model.Household.Name
+                Members: (@Html.Raw(Model.Household.Members.Count))
+                Accounts: (@Html.Raw(Model.Household.Accounts.Count))
             </div>
     }
     else

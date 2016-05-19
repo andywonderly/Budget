@@ -11,9 +11,28 @@ namespace Budget.Models
         public string OwnerUserId { get; set; }
         public string InvitedId { get; set; }
         public string InvitedEmail { get; set; }
-        public string HouseholdId { get; set; }
+        public int? HouseholdId { get; set; }
+        public string HouseholdName { get; set; }
         public DateTimeOffset Created { get; set; }
         public bool RespondedTo { get; set; }
 
+    }
+
+    public class InvitationViewModel
+    {
+        public int Id { get; set; }
+        public string OwnerUserId { get; set; }
+        public string OwnerUserName { get; set; }
+        public string OwnerUserEmail { get; set; }
+        public string InvitedEmail { get; set; }
+        public string InvitedId { get; set; }
+        public int? HouseholdId { get; set; }
+        public string HouseholdName { get; set; }
+        public DateTimeOffset Created { get; set; }
+        public List<ApplicationUser> SearchResult { get; set; }
+        public bool AlreadyInvited { get; set; }
+        public bool InvitedSuccess { get; set; }
+
+        
     }
 }
