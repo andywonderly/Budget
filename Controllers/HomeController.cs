@@ -14,7 +14,7 @@ namespace BugTrackerForTemplate.Controllers
 
         private ApplicationDbContext db = new ApplicationDbContext();
 
-        //[AuthorizeHouseholdRequired]
+        [AuthorizeHouseholdRequired]
         public ActionResult Index()
         {
             var currentUserId = System.Web.HttpContext.Current.User.Identity.GetUserId();
@@ -76,22 +76,28 @@ namespace BugTrackerForTemplate.Controllers
             model.User = new ApplicationUser { DisplayName = currentUser.DisplayName, Id = currentUser.Id };
 
 
-            List<Invitation> Invitations = new List<Invitation>();
-            Invitations = db.Invitations.Where(n => n.InvitedId == currentUser.Id || n.InvitedEmail == currentUser.Email).ToList();
+            List<Invitation> invitations = new List<Invitation>();
+            invitations = db.Invitations.Where(n => n.InvitedEmail == currentUser.Email && n.RespondedTo == false).ToList();
 
             model.Invitations = new List<InvitationViewModel>();
 
-            foreach(var item in Invitations)
+            
+            foreach(var item in invitations)
             {
-                model.Invitations.Add(new InvitationViewModel
-                { 
-                    /*OwnerUserId = item.OwnerUserId,*/
-                    OwnerUserName = db.Users.Find(item.OwnerUserId).DisplayName,
-                    OwnerUserEmail = db.Users.Find(item.OwnerUserId).Email,
-                    HouseholdId = item.HouseholdId,
-                    HouseholdName = db.Households.Find(item.HouseholdId).Name,
-                    Created = db.Households.Find(item.HouseholdId).Created
-                });
+                //model.Invitations.Add(item);
+
+                InvitationViewModel temp = new InvitationViewModel();
+
+                /*OwnerUserId = item.OwnerUserId,*/
+                temp.Id = item.Id;
+                temp.OwnerUserName = db.Users.Find(item.OwnerUserId).DisplayName;
+                    temp.OwnerUserEmail = db.Users.Find(item.OwnerUserId).Email;
+                temp.HouseholdId = item.HouseholdId;
+                    temp.HouseholdName = db.Households.Find(item.HouseholdId).Name;
+                    temp.Created = db.Households.Find(item.HouseholdId).Created;
+                
+
+                model.Invitations.Add(temp);
             }
 
             return View(model);

@@ -50,9 +50,11 @@
         foreach (var item in Model.Invitations)
         {
             <div class="row">
-                <div class="col-md-2">
+                <div class="col-md-12">
                     @item.OwnerUserName has invited you to join 
                     @item.HouseholdName
+                    @Html.ActionLink("Accept","Accept","Household", new { id = item.Id }, new { })
+                    @Html.ActionLink("Dismiss","Dismiss","Household", new { id = item.Id }, new { })
                 </div>
             </div>
         }

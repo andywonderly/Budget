@@ -58,7 +58,7 @@ namespace BugTrackerForTemplate.Controllers
         }
 
         [Authorize]
-        public ActionResult InviteConfirm([Bind(Include="InvitedEmail, HouseholdId")] InvitationViewModel model)
+        public async Task<ActionResult> InviteConfirm([Bind(Include="InvitedEmail, HouseholdId")] InvitationViewModel model)
         {
             var currentUserId = System.Web.HttpContext.Current.User.Identity.GetUserId();
             ApplicationUser currentUser = db.Users.Find(currentUserId);
@@ -91,84 +91,142 @@ namespace BugTrackerForTemplate.Controllers
 
             if (!model.AlreadyInvited)
             {
+                ViewBag.Message = "The invitation has been submitted, and its recipient will see it "
+                                + "upon his or her next login.";
+            }
+
+
+
+            if (!model.AlreadyInvited && !model.AlreadyInHousehold)
+            {
                 Invitation invitation = new Invitation
                 {
                     InvitedEmail = model.InvitedEmail,
                     OwnerUserId = currentUserId,
-                    HouseholdId = model.HouseholdId,
+                    HouseholdId = household.Id,
                     HouseholdName = household.Name,
                     Created = DateTimeOffset.Now,
                     RespondedTo = false,
                 };
 
-                ViewBag.Message = "The invitation has been submitted, and its recipient will see it "
-                                + "upon his or her next login.";
+                db.Invitations.Add(invitation);
+                db.SaveChanges();
+
+
+                var EmailInvitation = new IdentityMessage
+                {
+                    Body = "You have been invited to the household " +
+                household.Name + " by the user " +
+                db.Users.First(n => n.Id == invitation.OwnerUserId).DisplayName +
+                ".  Please log in to <a href='https://awonderly-budget.azurewebsites.net'>Budget</a> " +
+                "using this email address to respond to " +
+                "this invitation.",
+                    Subject = "Budget app: you have been invited to a household.",
+                    Destination = invitation.InvitedEmail,
+                };
+
+                var SendService = new EmailService();
+                await SendService.SendAsync(EmailInvitation);
+
+
             }
 
             return View(model);
         }
 
-
         [Authorize]
-        [HttpPost]
-        public async Task<ActionResult> InviteConfirm([Bind(Include = "Email")] InvitationViewModel model)
+        public ActionResult LeaveHousehold()
         {
             var currentUserId = System.Web.HttpContext.Current.User.Identity.GetUserId();
             ApplicationUser currentUser = db.Users.Find(currentUserId);
             Household household = db.Households.Find(currentUser.HouseholdId);
-            ApplicationUser invited = new ApplicationUser();
-
-            if (model.HasAccount)
-                invited = db.Users.Find(model.InvitedId);
 
 
-            Invitation invitation = new Invitation
+            if(household.Members.Count == 1)
+                ViewBag.Message = "Note: you are the only member of this household.  Leaving it will "
+                                + "cause it to be deleted.";
+            return View();
+        }
+
+        [Authorize]
+        [HttpPost]
+        public ActionResult LeaveHousehold(int Id)
+        {
+
+            var currentUserId = System.Web.HttpContext.Current.User.Identity.GetUserId();
+            ApplicationUser currentUser = db.Users.Find(currentUserId);
+            Household household = db.Households.Find(currentUser.HouseholdId);
+
+            household.Members.Remove(currentUser);
+
+            if (household.Members.Count > 0)
             {
-                InvitedEmail = model.SearchResult.Email,
-                OwnerUserId = currentUserId,
-                HouseholdId = household.Id,
-                HouseholdName = household.Name,
-                Created = DateTimeOffset.Now,
-                RespondedTo = false,
-            };
+                db.Households.Attach(household);
+            } else
+            {
+                db.Households.Remove(household);
+            }
 
-            db.Invitations.Add(invitation);
-
-            model.InvitedSuccess = true;
             db.SaveChanges();
 
-
-            //new EmailService.SendAsync(new IdentityMessage
-            //{
-            //    Destination = invitation.InvitedEmail,
-            //    Subject = "Budget app: you have been invited to a household.",
-            //    Body = "You have been invited to the household " +
-            //            household.Name + " by the user " +
-            //            db.Users.First(n => n.Id == invitation.OwnerUserId).DisplayName +
-            //            ".  Please log in to <a href='https://awonderly-budget.azurewebsites.net'>Budget</a> " +
-            //            "using this email address to respond to " +
-            //            "this invitation.",
-            //});
-
-            var EmailInvitation = new IdentityMessage
-            {
-                Body = "You have been invited to the household " +
-                        household.Name + " by the user " +
-                        db.Users.First(n => n.Id == invitation.OwnerUserId).DisplayName +
-                        ".  Please log in to <a href='https://awonderly-budget.azurewebsites.net'>Budget</a> " +
-                        "using this email address to respond to " +
-                        "this invitation.",
-                Subject = "Budget app: you have been invited to a household.",
-                Destination = invitation.InvitedEmail,
-            };
-
-            var SendService = new EmailService();
-            await SendService.SendAsync(EmailInvitation);
-
-
-            return RedirectToAction("Invite", "HouseholdController", model);
+            return RedirectToAction("Index", "Home");
         }
+
+        [Authorize]
+        public ActionResult Accept (int id)
+        {
+            Invitation invitation = new Invitation();
+            invitation.Id = id;
+            invitation.HouseholdName = db.Households.Find(id).Name;
+
+            return View(invitation);
+        }
+
+
+
+        [Authorize]
         
+        public ActionResult AcceptConfirm ([Bind(Include="Id")] InvitationViewModel model)
+        {
+            var currentUserId = System.Web.HttpContext.Current.User.Identity.GetUserId();
+            ApplicationUser currentUser = db.Users.Find(currentUserId);
+            //declare current and new households
+            Household currentHousehold = db.Households.Find(currentUser.HouseholdId);
+            Household newHousehold = db.Households.Find(model.Id);
+
+            //Remove from current and add to new.  And update HouseholdId
+            currentHousehold.Members.Remove(currentUser);
+            newHousehold.Members.Add(currentUser);
+            currentUser.HouseholdId = model.Id;
+            db.Users.Attach(currentUser);
+
+
+            //Set the invitation respondedTo to true and attach to db.Invitations
+            Invitation invitation = db.Invitations.Find(model.Id);
+            invitation.RespondedTo = true;
+            db.Invitations.Attach(invitation);
+
+            db.SaveChanges();
+
+            return RedirectToAction("Index", "Household");
+
+        }
+
+        [Authorize]
+        public ActionResult Dismiss(int id)
+        {
+            Invitation invitation = db.Invitations.Find(id);
+            invitation.RespondedTo = true;
+           
+            db.Invitations.Attach(invitation);
+            db.Entry(invitation).Property("RespondedTo").IsModified = true;
+            db.SaveChanges();
+
+            return RedirectToAction("CreateJoinHousehold", "Home");
+        }
+
+
+
     }
 
 

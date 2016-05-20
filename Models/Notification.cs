@@ -15,5 +15,6 @@ namespace Budget.Models
         public bool Unread { get; set; }
         public string UserId { get; set; }
         public int HouseholdId { get; set; }
+        public bool Expired { get; set; }
     }
 }

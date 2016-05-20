@@ -1,0 +1,24 @@
+﻿@model Budget.Models.InvitationViewModel
+
+@{
+    ViewBag.Title = "Home Page";
+    Layout = "~/Views/Shared/TemplateLayout.cshtml";
+}
+
+<h3>@ViewBag.Message</h3>
+
+@using (Html.BeginForm("LeaveHousehold", "Household", FormMethod.Post,
+                                                    new { enctype = "Multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+
+
+    <div class="row">
+        <div class="col-md-2">
+            <input type="submit" value="Confirm Leaving Household" class="btn btn-default" />
+        </div>
+
+    </div>
+}
+
+<h4>@Html.ActionLink("Back to Household Management","Index","Household")</h4>

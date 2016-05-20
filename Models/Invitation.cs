@@ -37,4 +37,9 @@ namespace Budget.Models
 
         
     }
+
+    public class InviteConfirmViewModel
+    {
+        public string InvitedEmail { get; set; }
+    }
 }

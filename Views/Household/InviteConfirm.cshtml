@@ -1,35 +1,10 @@
-﻿@model Budget.Models.ManageHouseholdViewModel
+﻿@model Budget.Models.InvitationViewModel
 
 @{
     ViewBag.Title = "Home Page";
     Layout = "~/Views/Shared/TemplateLayout.cshtml";
 }
 
-<h3>Your household</h3>
+<h3>@ViewBag.Message</h3>
 
-<div>
-    Household name: @Html.Raw(Model.Name)
-        <br />
-    Accounts:
-    @foreach(var item in Model.Accounts)
-    {
-        <div>
-            @item.Name
-            <br />
-        </div>
-    }
-    <br />
-    Members:
-    @foreach(var item in Model.Members)
-    {
-        <div>
-            @item.DisplayName
-            <br />
-        </div>
-    }
-
-    <br />
-    @Html.ActionLink("Invite a user to this household","Invite", new { id = Model.Id })
-
-
-</div>
+<h4>@Html.ActionLink("Back to Household Management","Index","Household")</h4>

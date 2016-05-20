@@ -259,6 +259,9 @@
     <Content Include="Views\Household\Index.cshtml" />
     <Content Include="Views\Household\Invite.cshtml" />
     <Content Include="Views\Household\InviteConfirm.cshtml" />
+    <Content Include="Views\Household\LeaveHousehold.cshtml" />
+    <None Include="Properties\PublishProfiles\awonderly-budget - Web Deploy.pubxml" />
+    <Content Include="Views\Household\Accept.cshtml" />
     <None Include="Views\Shared\TemplateLayout.cshtml" />
     <Content Include="js\bootstrap.js" />
     <Content Include="js\bootstrap.min.js" />

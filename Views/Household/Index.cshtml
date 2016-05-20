@@ -29,7 +29,18 @@
     }
 
     <br />
+    Pending invitations:
+    @foreach(var item in Model.PendingInvitations)
+    {
+        <br /> 
+        <div>
+            @item.InvitedEmail
+        </div>
+    }
+
+    <br />
     @Html.ActionLink("Invite a user to this household","Invite", new { id = Model.Id })
+    @Html.ActionLink("Leave this household","LeaveHousehold", new { id = Model.Id })
 
 
 </div>
