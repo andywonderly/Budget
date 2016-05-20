@@ -29,9 +29,11 @@ namespace Budget.Models
         public int? HouseholdId { get; set; }
         public string HouseholdName { get; set; }
         public DateTimeOffset Created { get; set; }
-        public List<ApplicationUser> SearchResult { get; set; }
+        public ApplicationUser SearchResult { get; set; }
         public bool AlreadyInvited { get; set; }
         public bool InvitedSuccess { get; set; }
+        public bool HasAccount { get; set; }
+        public bool AlreadyInHousehold { get; set; }
 
         
     }
