@@ -16,6 +16,9 @@ namespace Budget.Models
         public virtual ICollection<Account> Accounts { get; set; }
         public virtual ICollection<BudgetItem> BudgetItems { get; set; }
         public virtual ICollection<Category> Categories { get; set;}
+        public bool Active { get; set; }
+
+
 
     }
 }

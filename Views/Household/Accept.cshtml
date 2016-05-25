@@ -5,15 +5,16 @@
     Layout = "~/Views/Shared/TemplateLayout.cshtml";
 }
 
-<h3>Confirm your acceptance to the household: @Model.HouseholdName</h3>
-<h4>This action will remove yourself from your current household.</h4>
+<h3>Confirm your membership to the household: @Model.HouseholdName</h3>
+<h4>This action will remove yourself from your current household, if any.</h4>
+@ViewBag.x
 
-@using (Html.BeginForm("CreateHousehold", "Home", FormMethod.Post,
+@using (Html.BeginForm("AcceptConfirm", "Household", FormMethod.Post,
                                                     new { enctype = "Multipart/form-data" }))
 {
     @Html.AntiForgeryToken()
 
             <input type="hidden" value="@Model.Id" name="Id" />
-            <input type="submit" value="Create Household" class="btn btn-default" />
+            <input type="submit" value="Join Household" class="btn btn-default" />
        
 }

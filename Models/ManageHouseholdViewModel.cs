@@ -12,5 +12,6 @@ namespace Budget.Models
         public List<Account> Accounts { get; set; }
         public List<ApplicationUser> Members { get; set; }
         public List<Invitation> PendingInvitations { get; set; }
+        public List<Category> Categories { get; set; }
     }
 }

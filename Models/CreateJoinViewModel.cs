@@ -8,6 +8,7 @@ namespace Budget.Models
     public class CreateJoinViewModel
     {
         public List<InvitationViewModel> Invitations { get; set; }
+        //public List<Invitation> Invitations { get; set; }
         public ApplicationUser User { get; set; }
         public string Name { get; set; }
         public DateTimeOffset Created { get; set; }

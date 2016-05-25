@@ -4,23 +4,30 @@
     ViewBag.Title = "Home Page";
     Layout = "~/Views/Shared/TemplateLayout.cshtml";
 }
+<div class="row">
+    <div class="col-md-4">
 
-<div class="col-md-4">
-    <div class="row">
         <h3>Your Households</h3>
     </div>
-
-    @Html.ActionLink("Create new household","CreateJoinHousehold","Home")
-    
+    </div>
+<div class="row">
+    <div class="col-md-4" style="background-color: lightgray; padding: 5px;">
+        @Html.ActionLink("Create a new household or view invitations to another household", "CreateJoinHousehold", "Home")
+    </div>
+</div>
     @if (Model.Household != null)
     {
-            @*DROPDOWN FOR OTHER HOUSEHOLDS*@
+        @*DROPDOWN FOR OTHER HOUSEHOLDS*@
         @*Browser cookie for last visited household or if a default household is set*@
-            <div class="row DashboardHousehold">
-                @Model.Household.Name
+        <div class="row">
+            <div class="col-md-4">
+                @Html.ActionLink(Model.Household.Name + " [Manage]", "Index", "Household", new { id = Model.Household.Id }, new { })
+                <br />
                 Members: (@Html.Raw(Model.Household.Members.Count))
+                <br />
                 Accounts: (@Html.Raw(Model.Household.Accounts.Count))
             </div>
+        </div>
     }
     else
     {
@@ -28,4 +35,30 @@
             You are not a member of any households.
         </div>
     }
+
+
+<div class="row">
+    <div class="col-md-4">
+        <h3>@Html.ActionLink("Your invitations (" + Html.Raw(Model.Invitations.Count) + ")", "CreateJoinHousehold", "Home")</h3>
+    </div>
 </div>
+@*@if (Model.Invitations.Count > 0)
+{
+    foreach (var item in Model.Invitations)
+    {
+        <div class="row">
+            <div class="col-md-4">
+                Invited to @Html.Raw(item.HouseholdName) by @Html.Raw(item.OwnerUserId)
+                @Html.ActionLink("Accept", "Accept", "Household", new { id = item.HouseholdId }, new { })
+                // @Html.ActionLink("Dismiss", "Dismiss", "Household", new { id = item.HouseholdId }, new { })
+            </div>
+        </div>
+    }
+} else
+{
+    <div class="row">
+        <div class="col-md-4">
+            You have no pending invitations.
+        </div>
+    </div>
+}*@

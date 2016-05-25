@@ -6,8 +6,7 @@
 }
 
 <div class="row">
-    <h2>Create or Join Household</h2>
-    <h4>You are not a member of any households.  Create or join one on this page.</h4>
+    <h2>Create a household</h2>
     <button type="button" class="btn btn-primary" data-toggle="collapse" data-target="#demo">Create a new household</button>
     <div id="demo" class="collapse">
 
@@ -27,7 +26,7 @@
     </div>
     <div class="row">
         <div class="col-md-2">
-                @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control", @placeholder = "Title" } })
+                @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control", @placeholder = "Name" } })
                 @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
         </div>
     </div>
@@ -43,14 +42,15 @@
     </div>
 </div>
 
-<div class="col-md-4">
-
+<div class="col-md-12">
+    <h3>Join a household</h3>
     @if (Model.Invitations.Count > 0)
     {
         foreach (var item in Model.Invitations)
         {
             <div class="row">
                 <div class="col-md-12">
+                    [Invitation Id #@Html.Raw(item.Id)] [Household Id #@Html.Raw(item.HouseholdId)]
                     @item.OwnerUserName has invited you to join 
                     @item.HouseholdName
                     @Html.ActionLink("Accept","Accept","Household", new { id = item.Id }, new { })
@@ -62,7 +62,9 @@
     else
     {
         <div class="row">
-            You have no pending invitations.
+            <div class="col-md-12">
+                You have no pending invitations.
+            </div>
         </div>
     }
 

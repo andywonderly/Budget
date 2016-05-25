@@ -49,7 +49,7 @@ namespace Budget.Models
             return new ApplicationDbContext();
         }
 
-        public DbSet<Account> TicketAttachments { get; set; }
+        public DbSet<Account> Accounts { get; set; }
         public DbSet<BudgetItem> BudgetItems { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Household> Households { get; set; }
@@ -78,8 +78,6 @@ namespace Budget.Models
             var hid = cUser.Claims.FirstOrDefault(c => c.Type == "HouseholdId");
             return (hid != null && !string.IsNullOrWhiteSpace(hid.Value));
         }
-
-        //public class AuthorizeHouseholdRequired : AuthorizeAttribute { }
 
         public class AuthorizeHouseholdRequired : AuthorizeAttribute
         {

@@ -262,7 +262,8 @@
     <Content Include="Views\Household\LeaveHousehold.cshtml" />
     <None Include="Properties\PublishProfiles\awonderly-budget - Web Deploy.pubxml" />
     <Content Include="Views\Household\Accept.cshtml" />
-    <None Include="Views\Shared\TemplateLayout.cshtml" />
+    <None Include="Properties\PublishProfiles\awonderly2 - Web Deploy.pubxml" />
+    <Content Include="Views\Shared\TemplateLayout.cshtml" />
     <Content Include="js\bootstrap.js" />
     <Content Include="js\bootstrap.min.js" />
     <Content Include="js\flot\chart-data-flot.js" />
@@ -359,6 +360,7 @@
     <Content Include="Views\Shared\Lockout.cshtml" />
     <Content Include="Views\Shared\_LoginPartial.cshtml" />
     <Content Include="Service References\Application Insights\ConnectedService.json" />
+    <Content Include="Views\Household\_NewTransaction.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

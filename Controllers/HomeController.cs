@@ -2,6 +2,7 @@
 using Microsoft.AspNet.Identity;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
@@ -14,7 +15,7 @@ namespace BugTrackerForTemplate.Controllers
 
         private ApplicationDbContext db = new ApplicationDbContext();
 
-        [AuthorizeHouseholdRequired]
+        [Authorize]
         public ActionResult Index()
         {
             var currentUserId = System.Web.HttpContext.Current.User.Identity.GetUserId();
@@ -31,7 +32,7 @@ namespace BugTrackerForTemplate.Controllers
             model.Household = currentUser.Household;
 
             model.Transactions = db.Transactions.Where(n => n.OwnerUserId == currentUser.Id).ToList();
-            model.Invitations = db.Invitations.Where(n => n.InvitedId == currentUser.Id || n.InvitedEmail == currentUser.Email).ToList();
+            model.Invitations = db.Invitations.Where(n => n.InvitedEmail == currentUser.Email && n.RespondedTo == false && db.Households.Any( m => m.Id == n.HouseholdId)).ToList();
 
             model.Notifications = new List<Notification>();
 
@@ -41,7 +42,9 @@ namespace BugTrackerForTemplate.Controllers
             if (currentUserId != null)
                 model.Notifications.AddRange(db.Notifications.Where(n => n.UserId == currentUserId));
 
-            model.Invitations = db.Invitations.Where(n => n.InvitedId == currentUserId || n.InvitedEmail == currentUser.Email).ToList();
+   
+
+            //model.Invitations = db.Invitations.Where(n => n.InvitedId == currentUserId || n.InvitedEmail == currentUser.Email).ToList();
 
             return View(model);
         }
@@ -77,12 +80,12 @@ namespace BugTrackerForTemplate.Controllers
 
 
             List<Invitation> invitations = new List<Invitation>();
-            invitations = db.Invitations.Where(n => n.InvitedEmail == currentUser.Email && n.RespondedTo == false).ToList();
+            invitations = db.Invitations.Where(n => n.InvitedEmail == currentUser.Email && n.RespondedTo == false && db.Households.Any(m => m.Id == n.HouseholdId)).ToList();
 
             model.Invitations = new List<InvitationViewModel>();
 
-            
-            foreach(var item in invitations)
+
+            foreach (var item in invitations)
             {
                 //model.Invitations.Add(item);
 
@@ -90,12 +93,13 @@ namespace BugTrackerForTemplate.Controllers
 
                 /*OwnerUserId = item.OwnerUserId,*/
                 temp.Id = item.Id;
+                temp.InvitedEmail = item.InvitedEmail;
                 temp.OwnerUserName = db.Users.Find(item.OwnerUserId).DisplayName;
-                    temp.OwnerUserEmail = db.Users.Find(item.OwnerUserId).Email;
+                temp.OwnerUserEmail = db.Users.Find(item.OwnerUserId).Email;
                 temp.HouseholdId = item.HouseholdId;
-                    temp.HouseholdName = db.Households.Find(item.HouseholdId).Name;
-                    temp.Created = db.Households.Find(item.HouseholdId).Created;
-                
+                temp.HouseholdName = db.Households.Find(item.HouseholdId).Name;
+                temp.Created = db.Households.Find(item.HouseholdId).Created;
+
 
                 model.Invitations.Add(temp);
             }
@@ -121,7 +125,9 @@ namespace BugTrackerForTemplate.Controllers
             {
                 Name = model.Name,
                 OwnerUserId = currentUserId,
-                Created = DateTimeOffset.Now
+                Created = DateTimeOffset.Now,
+                Active = true,
+                Categories = db.Categories.ToList(),
             };
 
             //Add current user
@@ -133,11 +139,13 @@ namespace BugTrackerForTemplate.Controllers
             db.SaveChanges();
 
             //Set the current user's household Id to the household that was just created & added
-            currentUser.HouseholdId = db.Households.FirstOrDefault(u => u.OwnerUserId == currentUserId).Id;
+            currentUser.HouseholdId = db.Households.FirstOrDefault(u => u.OwnerUserId == currentUserId && u.Created == household.Created).Id;
+            db.Entry(currentUser).State = EntityState.Modified;
 
+            db.SaveChanges();
 
             ViewBag.Message = "Household successfully created and joined.";
-            return RedirectToAction("Index");
+            return RedirectToAction("Index","Household");
         }
     }
 

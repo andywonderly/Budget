@@ -4,6 +4,7 @@ using Microsoft.AspNet.Identity;
 using SendGrid;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
@@ -18,7 +19,7 @@ namespace BugTrackerForTemplate.Controllers
 
         private ApplicationDbContext db = new ApplicationDbContext();
 
-        //[AuthorizeHouseholdRequired]
+        [Authorize]
         public ActionResult Index()
         {
             var currentUserId = System.Web.HttpContext.Current.User.Identity.GetUserId();
@@ -42,7 +43,18 @@ namespace BugTrackerForTemplate.Controllers
                 PendingInvitations = db.Invitations.Where(n => n.HouseholdId == household.Id).ToList(),
             };
 
+            List<Invitation> temp = model.PendingInvitations.ToList();
 
+            foreach(var item in temp)
+            {
+                if(item.RespondedTo == true)
+                {
+                    model.PendingInvitations.Remove(item);
+                }
+            }
+
+            model.Categories = household.Categories.ToList();
+            ViewBag.CategoryId = new SelectList(model.Categories, "Id", "Name");
 
             return View(model);
         }
@@ -84,7 +96,7 @@ namespace BugTrackerForTemplate.Controllers
             //Test each invitation for being for the current household and whether it's been responded to
             foreach(var item in outstanding)
             {
-                if (item.HouseholdId == household.Id || item.RespondedTo == false)
+                if (item.HouseholdId == household.Id && item.RespondedTo == false)
                     model.AlreadyInvited = true;
                 ViewBag.Message = "This user already has an outstanding invitation to your household.";
             }
@@ -137,6 +149,7 @@ namespace BugTrackerForTemplate.Controllers
         [Authorize]
         public ActionResult LeaveHousehold()
         {
+
             var currentUserId = System.Web.HttpContext.Current.User.Identity.GetUserId();
             ApplicationUser currentUser = db.Users.Find(currentUserId);
             Household household = db.Households.Find(currentUser.HouseholdId);
@@ -150,6 +163,7 @@ namespace BugTrackerForTemplate.Controllers
 
         [Authorize]
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult LeaveHousehold(int Id)
         {
 
@@ -158,15 +172,30 @@ namespace BugTrackerForTemplate.Controllers
             Household household = db.Households.Find(currentUser.HouseholdId);
 
             household.Members.Remove(currentUser);
+            currentUser.HouseholdId = null;
 
-            if (household.Members.Count > 0)
+            if(household.Members.Count == 0)
             {
-                db.Households.Attach(household);
-            } else
-            {
-                db.Households.Remove(household);
+                //Soft-delete the household.  This may not actually be necessary since the display
+                //of the household to the user is tied to their HouseholdId.  Aka, there is no program
+                //logic yet that does anything with the bool Active.
+                household.Active = false;
+
+                //After removing the household, we want to find all invitations to that household
+                //and set the RespondedTo bool to True so that the invitations are not displayed, and
+                //more importantly, cannot be accepted
+                List<Invitation> invitations = new List<Invitation>();
+                invitations = db.Invitations.Where(n => n.HouseholdId == household.Id).ToList();
+                
+                foreach(var item in invitations)
+                {
+                    item.RespondedTo = true;
+                    db.Entry(item).Property("RespondedTo").IsModified = true;  
+                }
             }
 
+            db.Entry(currentUser).State = EntityState.Modified;
+            db.Entry(household).State = EntityState.Modified;
             db.SaveChanges();
 
             return RedirectToAction("Index", "Home");
@@ -175,36 +204,50 @@ namespace BugTrackerForTemplate.Controllers
         [Authorize]
         public ActionResult Accept (int id)
         {
-            Invitation invitation = new Invitation();
-            invitation.Id = id;
-            invitation.HouseholdName = db.Households.Find(id).Name;
-
+            Invitation invitation = db.Invitations.Find(id);
+            //invitation.Id = id;
+            invitation.HouseholdName = db.Households.Find(invitation.HouseholdId).Name;
+            
             return View(invitation);
         }
 
 
 
-        [Authorize]
-        
+        [Authorize]   
         public ActionResult AcceptConfirm ([Bind(Include="Id")] InvitationViewModel model)
         {
+            //***SEND INVITATION AND HOUSEHOLD ID FROM FORM?  TO CONFIRM THAT YOU WERE INVITED
+            //TO THE HOUSEHOLD YOU ARE JOINING
+
             var currentUserId = System.Web.HttpContext.Current.User.Identity.GetUserId();
             ApplicationUser currentUser = db.Users.Find(currentUserId);
+            Invitation invitation = db.Invitations.Find(model.Id);
             //declare current and new households
-            Household currentHousehold = db.Households.Find(currentUser.HouseholdId);
-            Household newHousehold = db.Households.Find(model.Id);
+            //Household currentHousehold = db.Households.Find(currentUser.HouseholdId);
+            Household newHousehold = db.Households.Find(invitation.HouseholdId);
 
             //Remove from current and add to new.  And update HouseholdId
-            currentHousehold.Members.Remove(currentUser);
+            if (currentUser.HouseholdId != null)
+            {
+                Household currentHousehold = db.Households.Find(currentUser.HouseholdId);
+                currentHousehold.Members.Remove(currentUser);
+            }
+
             newHousehold.Members.Add(currentUser);
-            currentUser.HouseholdId = model.Id;
-            db.Users.Attach(currentUser);
+            currentUser.HouseholdId = newHousehold.Id;
+
+            db.Entry(currentUser).State = EntityState.Modified;
+            //db.Users.Attach(currentUser);
+
+            db.Entry(newHousehold).State = EntityState.Modified;
+            //db.Households.Attach(newHousehold);
 
 
             //Set the invitation respondedTo to true and attach to db.Invitations
-            Invitation invitation = db.Invitations.Find(model.Id);
+            //Invitation invitation = db.Invitations.Find(model.Id);
             invitation.RespondedTo = true;
-            db.Invitations.Attach(invitation);
+            db.Entry(invitation).State = EntityState.Modified;
+            //db.Invitations.Attach(invitation);
 
             db.SaveChanges();
 
@@ -217,12 +260,78 @@ namespace BugTrackerForTemplate.Controllers
         {
             Invitation invitation = db.Invitations.Find(id);
             invitation.RespondedTo = true;
-           
-            db.Invitations.Attach(invitation);
-            db.Entry(invitation).Property("RespondedTo").IsModified = true;
+
+            db.Entry(invitation).State = EntityState.Modified;
+            //db.Invitations.Attach(invitation);
+            
             db.SaveChanges();
 
             return RedirectToAction("CreateJoinHousehold", "Home");
+        }
+
+        [Authorize]
+        public ActionResult NewTransaction([Bind(Include = "Amount, AccountId, CategoryId, Expenditure")] TransactionViewModel model)
+        {
+            //Send:
+            //Categories
+            //
+            var currentUserId = System.Web.HttpContext.Current.User.Identity.GetUserId();
+            ApplicationUser currentUser = db.Users.Find(currentUserId);
+            Household household = db.Households.Find(currentUser.HouseholdId);
+            Account account = db.Accounts.Find(model.AccountId);
+
+            if (model.Expenditure)
+            {
+                model.Amount *= -1;
+            }
+
+
+            account.Balance = account.Balance + model.Amount;
+
+            Transaction transaction = new Transaction
+            {
+                Amount = model.Amount,
+                AccountId = model.AccountId,
+                Balance = account.Balance,
+                CategoryId = model.CategoryId,
+                Description = model.Description,
+                OwnerUserId = currentUser.Id,
+                Expenditure = model.Expenditure,
+            };
+
+
+            account.Transactions.Add(transaction);
+            db.Entry(account).State = EntityState.Modified;
+            db.Transactions.Add(transaction);
+
+            db.SaveChanges();
+
+
+            return RedirectToAction("Index", "Household");
+        }
+
+        //POST ACTION NEEDED!
+
+        [Authorize]
+        public ActionResult CreateAccount([Bind(Include = "Name, Balance, HouseholdId")] Account account)
+        {
+            var currentUserId = System.Web.HttpContext.Current.User.Identity.GetUserId();
+            ApplicationUser currentUser = db.Users.Find(currentUserId);
+            Household household = db.Households.Find(currentUser.HouseholdId);
+
+
+            if (ModelState.IsValid)
+            {
+                account.OwnerUserId = currentUser.Id;
+            }
+
+            db.Accounts.Add(account);
+            household.Accounts.Add(account);
+            db.SaveChanges();
+
+            return RedirectToAction("Index", "Household");
+
+
         }
 
 

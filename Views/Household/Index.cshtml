@@ -9,9 +9,9 @@
 
 <div>
     Household name: @Html.Raw(Model.Name)
-        <br />
-    Accounts:
-    @foreach(var item in Model.Accounts)
+    <br />
+    Accounts (@Html.Raw(Model.Accounts.Count)):
+    @foreach (var item in Model.Accounts)
     {
         <div>
             @item.Name
@@ -19,8 +19,8 @@
         </div>
     }
     <br />
-    Members:
-    @foreach(var item in Model.Members)
+    Members (@Html.Raw(Model.Members.Count)):
+    @foreach (var item in Model.Members)
     {
         <div>
             @item.DisplayName
@@ -29,18 +29,125 @@
     }
 
     <br />
-    Pending invitations:
-    @foreach(var item in Model.PendingInvitations)
+    Pending invitations (@Html.Raw(Model.PendingInvitations.Count)):
+
+    @if (Model.PendingInvitations.Count == 0)
     {
-        <br /> 
+        <br />
+        <div>
+            There are no pending invitations to this household.
+        </div>
+    }
+
+    @foreach (var item in Model.PendingInvitations)
+    {
+        <br />
         <div>
             @item.InvitedEmail
         </div>
     }
 
     <br />
-    @Html.ActionLink("Invite a user to this household","Invite", new { id = Model.Id })
-    @Html.ActionLink("Leave this household","LeaveHousehold", new { id = Model.Id })
+    @Html.ActionLink("Invite a user to this household", "Invite", new { id = Model.Id })
+    @Html.ActionLink("Leave this household", "LeaveHousehold", new { id = Model.Id })
 
 
 </div>
+
+<hr />
+<h4>Accounts</h4>
+
+<div class="row">
+    <button type="button" class="btn btn-primary" data-toggle="collapse" data-target="#CreateDropdown">Create a new account</button>
+    <div id="CreateDropdown" class="collapse">
+
+        @using (Html.BeginForm("CreateAccount", "Household", FormMethod.Post,
+                                                    new { enctype = "Multipart/form-data" }))
+        {
+            @Html.AntiForgeryToken()
+
+            <div class="row">
+
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                <div class="col-md-2">
+                    <h4>
+                        Name your account:
+                    </h4>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-2">
+                    @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control", @placeholder = "Account name" } })
+                    @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-2">
+                    Enter a balance amount: $
+                    <input type="number" name="Balance" />
+                </div>
+            </div>
+            <div style="min-height: 5px;"></div>
+            <div class="row">
+                <div class="col-md-2">
+                    <input type="hidden" name="HouseholdId" value="@Model.Id" />
+                    <input type="submit" value="Create Account" class="btn btn-default" />
+                </div>
+
+            </div>
+        }
+
+    </div>
+</div>
+
+
+@foreach (var item in Model.Accounts)
+{
+
+
+    <h3>@item.Name</h3><div class="row">
+    <h3>$@item.Balance</h3>
+        <button type="button" class="btn btn-primary" data-toggle="collapse" data-target="#NewTransaction-@item.Id">New transaction</button>
+        <div id="NewTransaction-@item.Id" class="collapse">
+            @using (Html.BeginForm("NewTransaction", "Household", FormMethod.Post,
+                new { enctype = "Multipart/form-data" }))
+            {
+                @Html.AntiForgeryToken()
+
+                <div class="row">
+
+                    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                </div>
+                <div class="row">
+                    <div class="col-md-2">
+                        Enter a dollar amount:
+                        <input type="number" name="Amount" />
+                        @*@Html.EditorFor(model => model.Amount, new { htmlAttributes = new { @class = "form-control", @placeholder = "Name" } })
+                            @Html.ValidationMessageFor(model => model.Amount, "", new { @class = "text-danger" })
+                            @Html.EditorFor()*@
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-2">
+                        Choose a category:
+                        @Html.DropDownList("CategoryId", null, htmlAttributes: new { @class = "form-control" })
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-2">
+                        Expenditure? <input type="checkbox" name="Expenditure" checked="checked" value="true"/>
+                    </div>
+                </div>
+                <div style="min-height: 5px;"></div>
+                <div class="row">
+                    <div class="col-md-2">
+                        <input type="hidden" name="AccountId" value="@item.Id" />
+                        <input type="submit" value="Submit transaction" class="btn btn-default" />
+                    </div>
+
+                </div>
+
+            }
+        </div>
+    </div>
+}
