@@ -5,8 +5,17 @@
     Layout = "~/Views/Shared/TemplateLayout.cshtml";
 }
 
-<h3>Your household</h3>
+<button class="btn-default" onclick="GetChart()">Chart</button>
 
+<div id="MyChart" style="height: 200px;">
+
+    <button class="btn-default" onclick="EditAccountName(1)">Edit Account Name</button>
+    <div id="Account-1" style="height: 256px;"></div>
+    
+</div>
+
+<h3>Your household</h3>
+<button id="cr">Create</button>
 <div>
     Household name: @Html.Raw(Model.Name)
     <br />
@@ -55,7 +64,7 @@
 </div>
 
 <hr />
-<h4>Accounts</h4>
+<h3>Accounts</h3>
 
 <div class="row">
     <button type="button" class="btn btn-primary" data-toggle="collapse" data-target="#CreateDropdown">Create a new account</button>
@@ -104,13 +113,21 @@
 @foreach (var item in Model.Accounts)
 {
 
+    <div class="row" style="border: 3px solid black; width: 512px; margin-top: 5px; margin-bottom: 5px; border-radius: 10px;">
+        @*<div id="AccountNameField" style="display: inline;">*@
+        @Html.Action("_AccountName","Household",new { id = item.Id })
+            @*<div id="AccountNameField-@item.Id" style="display: inline;">
+                <h4 style="display: inline;">@item.Name </h4>
+                <button class="ed" data-id="@item.Id" id="@item.Id" type="button" style="border: none; background-color: transparent; display:inline;" onclick="EditAccountName(id)"><i class="fa fa-edit"></i></button>
 
-    <h3>@item.Name</h3><div class="row">
-    <h3>$@item.Balance</h3>
+            </div>*@
+
+        <h5>@Html.ActionLink("Delete Account","DeleteAccount","Household", new { id = item.Id }, new { } )</h5>
+        <h5>Balance: $@item.Balance</h5>
         <button type="button" class="btn btn-primary" data-toggle="collapse" data-target="#NewTransaction-@item.Id">New transaction</button>
         <div id="NewTransaction-@item.Id" class="collapse">
             @using (Html.BeginForm("NewTransaction", "Household", FormMethod.Post,
-                new { enctype = "Multipart/form-data" }))
+                    new { enctype = "Multipart/form-data" }))
             {
                 @Html.AntiForgeryToken()
 
@@ -119,7 +136,7 @@
                     @Html.ValidationSummary(true, "", new { @class = "text-danger" })
                 </div>
                 <div class="row">
-                    <div class="col-md-2">
+                    <div class="col-md-4">
                         Enter a dollar amount:
                         <input type="number" name="Amount" />
                         @*@Html.EditorFor(model => model.Amount, new { htmlAttributes = new { @class = "form-control", @placeholder = "Name" } })
@@ -128,23 +145,23 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-md-2">
+                    <div class="col-md-4">
                         Choose a category:
                         @Html.DropDownList("CategoryId", null, htmlAttributes: new { @class = "form-control" })
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-md-2">
-                        Expenditure? <input type="checkbox" name="Expenditure" checked="checked" value="true"/>
+                    <div class="col-md-4">
+                        Expenditure? <input type="checkbox" name="Expenditure" checked="checked" value="true" />
                     </div>
                 </div>
                 <div style="min-height: 5px;"></div>
                 <div class="row">
-                    <div class="col-md-2">
+                    <div class="col-md-4">
                         <input type="hidden" name="AccountId" value="@item.Id" />
                         <input type="submit" value="Submit transaction" class="btn btn-default" />
                     </div>
-
+                    
                 </div>
 
             }

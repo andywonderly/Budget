@@ -1,6 +1,7 @@
 ﻿using Budget;
 using Budget.Models;
 using Microsoft.AspNet.Identity;
+using Newtonsoft.Json;
 using SendGrid;
 using System;
 using System.Collections.Generic;
@@ -39,7 +40,7 @@ namespace BugTrackerForTemplate.Controllers
                 Name = household.Name,
                 Id = household.Id,
                 Members = members.ToList(),
-                Accounts = household.Accounts.ToList(),
+                Accounts = household.Accounts.Where(n => n.Active == true).ToList(),
                 PendingInvitations = db.Invitations.Where(n => n.HouseholdId == household.Id).ToList(),
             };
 
@@ -323,6 +324,7 @@ namespace BugTrackerForTemplate.Controllers
             if (ModelState.IsValid)
             {
                 account.OwnerUserId = currentUser.Id;
+                account.Active = true;
             }
 
             db.Accounts.Add(account);
@@ -332,6 +334,58 @@ namespace BugTrackerForTemplate.Controllers
             return RedirectToAction("Index", "Household");
 
 
+        }
+
+        [Authorize]
+        public ActionResult _EditAccountName(int id)
+        {
+            Account model = db.Accounts.Find(id);
+            return View(model);
+        }
+
+        [Authorize]
+        public ActionResult EditAccountName(int id)
+        {
+            return Content("@Html.Action('Foo','Household')");
+        }
+
+        //[Authorize]
+        //public void _EditAccountConfirm([Bind(Include ="Name, Id")] Account model)
+        //{
+        //    Account account = db.Accounts.Find(model.Id);
+        //    account.Name = model.Name;
+        //    db.Entry(account).State = EntityState.Modified;
+        //    db.SaveChanges();
+        //}
+
+        [Authorize]
+        public ActionResult _AccountName(int id)
+        {
+            Account model = db.Accounts.Find(id);
+            return View(model);
+        }
+
+        public ActionResult GetChart()
+        {
+
+            var data = new[] { new {label = "2008", value = 20},
+            new { label = "2008", value = 5 },
+            new { label = "2010", value = 7 },
+            new { label = "2011", value = 10 },
+            new { label = "2012", value = 20}};
+
+            return Content(JsonConvert.SerializeObject(data),
+            "application/json");
+        }
+
+        public ActionResult DeleteAccount(int id)
+        {
+            Account account = db.Accounts.Find(id);
+            account.Active = false;
+            db.Entry(account).State = EntityState.Modified;
+            db.SaveChanges();
+
+            return RedirectToAction("Index", "Household");
         }
 
 

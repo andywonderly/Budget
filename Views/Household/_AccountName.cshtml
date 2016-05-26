@@ -1,0 +1,13 @@
+﻿@model Budget.Models.Account
+
+@{
+
+    Layout = null;
+}
+
+
+<div id="AccountNameField-@Model.Id" style="display: inline;">
+    <h4 style="display: inline;">@Model.Name </h4>
+    <button class="ed" data-id="@Model.Id" id="@Model.Id" type="button" style="border: none; background-color: transparent; display:inline;" onclick="EditAccountName(id)"><i class="fa fa-edit"></i></button>
+    <button class="ed" data-id="@Model.Id" id="@Model.Id" type="button" style="border: none; background-color: transparent; display:inline;" onclick="GetChart()">CHARTASDASDASD</button>
+</div>

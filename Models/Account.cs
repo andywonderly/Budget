@@ -15,6 +15,7 @@ namespace Budget.Models
         public float Balance { get; set; }
         public virtual ICollection<Transaction> Transactions { get; set; }
         //public virtual ICollection<Notification> Notifications { get; set; }
+        public bool Active { get; set; }
 
     }
 }
