@@ -1,0 +1,40 @@
+﻿@model Budget.Models.Account
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Dashboard - SB Admin</title>
+
+
+    <!-- Bootstrap core CSS -->
+    <link href="~/css/bootstrap.css" rel="stylesheet">
+
+    <!-- Add custom CSS here -->
+    <link href="~/css/sb-admin.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/font-awesome/css/font-awesome.min.css">
+
+    <!-- Page Specific CSS -->
+    <link rel="stylesheet" href="http://cdn.oesmith.co.uk/morris-0.4.3.min.css">
+
+
+
+</head>
+
+@{
+
+    Layout = "";
+}
+
+@using (Html.BeginForm("_DeleteAccount", "Household", FormMethod.Post,
+                        new { enctype = "Multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+
+    <input type="hidden" value="@Model.Id" name="Id" />
+    @*<button type="button" class="btn-create" onclick="RestoreDeleteAccount(@Model.Id)" data-dismiss="modal" style="width: 128px;" >Cancel</button>*@
+    <button type="button" class="btn-create" onclick="RestoreDeleteAccount(@Model.Id)" style="width: 128px;">Cancel</button>
+    <button type="submit" class="btn-danger" style="width: 128px;">Confirm Deletion</button>
+}

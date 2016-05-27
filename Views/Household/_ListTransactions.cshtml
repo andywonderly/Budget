@@ -1,0 +1,33 @@
+﻿@model Budget.Models.AccountViewModel
+
+@{
+    Layout = "";
+}
+
+@foreach (var item in Model.TransactionViewModels)
+{
+
+    <div class="row">
+        <div class="col-md-6">
+            Owner: @item.OwnerUserName
+            <br />
+            At time: @item.Created.LocalDateTime
+            <br />
+            Description: @item.Description
+            <br />
+            Amount: $@item.Amount
+            <br />
+            Balance:  $@item.Balance
+            <br />
+            Category: @item.Category
+        </div>
+        <div class="col-md-6">
+            Edit
+            <br />
+            Void
+            <br />
+            Delete
+        </div>
+    </div>
+    <div style="min-height: 10px;"></div>
+}

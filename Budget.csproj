@@ -253,6 +253,9 @@
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
+    <Content Include="images\ellipsis.gif" />
+    <Content Include="images\ripple.gif" />
+    <Content Include="images\spin.gif" />
     <Content Include="Private.config" />
     <Content Include="Views\Shared\TemplateLayout - Copy.cshtml" />
     <Content Include="Views\Home\CreateJoinHousehold.cshtml" />
@@ -364,6 +367,8 @@
     <Content Include="Views\Household\Foo.cshtml" />
     <Content Include="Views\Household\_EditAccountName.cshtml" />
     <Content Include="Views\Household\_AccountName.cshtml" />
+    <Content Include="Views\Household\_DeleteAccount.cshtml" />
+    <Content Include="Views\Household\_ListTransactions.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

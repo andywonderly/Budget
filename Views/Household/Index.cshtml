@@ -15,7 +15,6 @@
 </div>
 
 <h3>Your household</h3>
-<button id="cr">Create</button>
 <div>
     Household name: @Html.Raw(Model.Name)
     <br />
@@ -114,16 +113,85 @@
 {
 
     <div class="row" style="border: 3px solid black; width: 512px; margin-top: 5px; margin-bottom: 5px; border-radius: 10px;">
-        @*<div id="AccountNameField" style="display: inline;">*@
-        @Html.Action("_AccountName","Household",new { id = item.Id })
+        <div id="AccountNameField-@item.Id" style="display: inline;">
+            <h3 style="display: inline;">@item.Name </h3>
+            <button type="button" data-toggle="modal" data-target="#Account-@item.Id" style="border: none; background-color: transparent; display:inline;" ><i class="fa fa-edit"></i></button>
+            @*<button class="ed" data-id="@Model.Id" id="@Model.Id" type="button" style="border: none; background-color: transparent; display:inline;" onclick="EditAccountName(id)"><i class="fa fa-edit"></i></button>*@
+        </div>    
+    
+    
+        <div class="modal fade" id="Account-@item.Id" role="dialog">
+            <div class="modal-dialog">
+
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">Edit Account</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row" style="width: 256px; margin-left: 1px;">
+                            
+                                @using (Html.BeginForm("EditAccount", "Household", FormMethod.Post,
+                                                         new { enctype = "Multipart/form-data" }))
+                                {
+                                    @Html.AntiForgeryToken()
+
+                                    @Html.Raw("Account name:")
+                                    @*@Html.EditorFor(model => Model.Name, new { htmlAttributes = new { @class = "form-control" } })
+                                    @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })*@
+                                    <input type="text" name="Name" value="@item.Name" placeholder="=@item.Name" style="display: inline; padding-left: 10px; width: 256px; height: 32px; border: 1px solid lightgray; border-radius: 3px;" />
+                                    <br />
+                                    <br />
+                                    @Html.Raw("Account balance: $")
+                                    <input type="number" name="Balance" value="@item.Balance" placeholder="=@item.Balance"  style="display: inline; padding-left: 10px; width: 256px; height: 32px; border: 1px solid lightgray; border-radius: 3px;" />
+                                    
+                                    <input type="hidden" name="Id" value="@item.Id"/>
+                                    <br />
+                                    <button type="submit" class="btn btn-default" style="margin-top: 5px;">Submit</button>
+                                    }
+                            
+
+                            </div>
+                        <p style="margin-top: 10px;">Or...</p>
+                        <div class="row" style="margin-top: 5px;">
+                            <div id="DeleteAccount-@item.Id" style="width: 512px; margin-left: 17px;">
+                                <button id="DeleteButton" class="btn-danger" onclick="DeleteAccount(@item.Id)" style="width: 128px;">Delete Account</button>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+
+
+
+    @*<div id="AccountNameField" style="display: inline;">*@
+        @*@Html.Action("_AccountName","Household",new { id = item.Id })*@
             @*<div id="AccountNameField-@item.Id" style="display: inline;">
                 <h4 style="display: inline;">@item.Name </h4>
                 <button class="ed" data-id="@item.Id" id="@item.Id" type="button" style="border: none; background-color: transparent; display:inline;" onclick="EditAccountName(id)"><i class="fa fa-edit"></i></button>
 
             </div>*@
 
-        <h5>@Html.ActionLink("Delete Account","DeleteAccount","Household", new { id = item.Id }, new { } )</h5>
-        <h5>Balance: $@item.Balance</h5>
+
+        <h4>Balance: $@item.Balance</h4>
+        @if(item.Balance <= 0)
+        {
+            <div class="row">
+                <div class="col-md-4" style="color: red;">
+                    This account has been overdrafted.
+                    </div>  
+            </div>
+        }
+        <br />
+        <h4>Transactions</h4>
         <button type="button" class="btn btn-primary" data-toggle="collapse" data-target="#NewTransaction-@item.Id">New transaction</button>
         <div id="NewTransaction-@item.Id" class="collapse">
             @using (Html.BeginForm("NewTransaction", "Household", FormMethod.Post,
@@ -165,6 +233,9 @@
                 </div>
 
             }
+        </div>
+        <div>
+            @Html.Action("_ListTransactions","Household", new { id = item.Id })
         </div>
     </div>
 }

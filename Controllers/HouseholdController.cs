@@ -298,6 +298,8 @@ namespace BugTrackerForTemplate.Controllers
                 Description = model.Description,
                 OwnerUserId = currentUser.Id,
                 Expenditure = model.Expenditure,
+                Void = false,
+                Created = DateTimeOffset.Now,
             };
 
 
@@ -344,9 +346,16 @@ namespace BugTrackerForTemplate.Controllers
         }
 
         [Authorize]
-        public ActionResult EditAccountName(int id)
+        public ActionResult EditAccount([Bind(Include = "Id, Name, Balance")] Account model)
         {
-            return Content("@Html.Action('Foo','Household')");
+            Account account = db.Accounts.Find(model.Id);
+            account.Name = model.Name;
+            account.Balance = model.Balance;
+            db.Entry(account).State = EntityState.Modified;
+            db.SaveChanges();
+
+            return RedirectToAction("Index", "Household");
+        
         }
 
         //[Authorize]
@@ -378,14 +387,61 @@ namespace BugTrackerForTemplate.Controllers
             "application/json");
         }
 
-        public ActionResult DeleteAccount(int id)
+        [Authorize]
+        public ActionResult _DeleteAccount(int id)
         {
-            Account account = db.Accounts.Find(id);
+            Account model = db.Accounts.Find(id);
+            return View(model);
+        }
+
+        [Authorize]
+        [HttpPost]
+        public ActionResult _DeleteAccount([Bind(Include ="Id")] Account model)
+        {
+
+            Account account = db.Accounts.Find(model.Id);
             account.Active = false;
             db.Entry(account).State = EntityState.Modified;
             db.SaveChanges();
 
             return RedirectToAction("Index", "Household");
+        }
+
+        [Authorize]
+        public ActionResult _ListTransactions(int id)
+        {
+            //List<Transaction> transactions = new List<Transaction>();
+            Account account = db.Accounts.Find(id);
+            Household household = db.Households.Find(account.HouseholdId);
+            List<Transaction> transactions = account.Transactions.ToList();
+            List<Transaction> transactions2 = transactions.ToList();
+            
+            foreach(var item in transactions)
+            {
+                if (item.Void == true)
+                    transactions2.Remove(item);
+            }
+
+            AccountViewModel model = new AccountViewModel();
+            model.TransactionViewModels = new List<TransactionViewModel>();
+
+            foreach(var item in transactions2)
+            {
+                TransactionViewModel temp = new TransactionViewModel()
+                {
+                    Amount = item.Amount,
+                    OwnerUserName = db.Users.Find(item.OwnerUserId).DisplayName,
+                    Balance = item.Balance,
+                    Category = household.Categories.FirstOrDefault(n => n.Id == item.CategoryId).Name,
+                    Reconciled = item.Reconciled,
+                    Created = item.Created,
+                    
+                };
+
+                model.TransactionViewModels.Add(temp);
+            }
+
+            return View(model);
         }
 
 

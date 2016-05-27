@@ -45,9 +45,10 @@
         <!-- Collect the nav links, forms, and other content for toggling -->
         <div class="collapse navbar-collapse navbar-ex1-collapse">
           <ul class="nav navbar-nav side-nav">
-            <li class="active"><a href="../../Home/Index/"><i class="fa fa-dashboard"></i> Home / Index</a></li>
+            <li class="active"><a href="@Url.Action("Index","Home")"><i class="fa fa-dashboard"></i> Home / Index</a></li>
              
-            <li><a href="../../Household/Index/"><i class="fa fa-bar-chart-o"></i> Household</a></li>
+            @*<li><a href="../Household/Index/"><i class="fa fa-bar-chart-o"></i> Household</a></li>*@
+            <li><a href="@Url.Action("Index","Household")"><i class="fa fa-bar-chart-o"></i> Household</a></li>
             <li><a href="#"><i class="fa fa-table"></i> Tables</a></li>
             <li><a href="#"><i class="fa fa-edit"></i> Forms</a></li>
             <li><a href="#"><i class="fa fa-font"></i> Typography</a></li>
@@ -209,21 +210,45 @@
               //alert("EAN running");
               $.post('../Household/EditAccountName/' + id).then
               (function (response) {
-                  
+
                   document.getElementById("Account-" + id).innerHTML = response;
 
               });
           }
 
+          function DeleteAccount(id)
+          {
+              //Show a loading gif in case it takes some time to load _DeleteAccount
+              $("#DeleteButton").css('background-image', 'url("../images/ellipsis.gif")');
+              $("#DeleteButton").css('background-repeat', 'no-repeat');
+              $("#DeleteButton").css('background-position', 'center');
+              
+              $("#DeleteAccount-" + id).load("../Household/_DeleteAccount/" + id);
+
+              //$.post('../Household/_DeleteAccount/' + id).then
+              //(function (response) {
+              //    document.getElementById("DeleteAccount-" + id).innerHTML = response;
+              //})
+          }
+
+          function RestoreDeleteAccount(id)
+          {
+              
+              divString = '<button class="btn-danger" onclick="DeleteAccount(' + id +')" style="width: 128px;">Delete Account</button>';
+              document.getElementById("DeleteAccount-" + id).innerHTML = divString;
+              //$('#Account-' + id).modal('hide');
+              //$.modal.Close();
+          }
+
 
               //function EditAccountName(id)
               //{
-                  
+
 
               //    var idString = id.toString();
               //    var divId = "#AccountNameField-" + idString;
               //    var loadString = "/Household/_EditAccountName/" + idString;
-                 
+
 
               //    $(divId).load(loadString);
               //    $(divId).css("display", "inline");
@@ -234,7 +259,7 @@
 
               //function AccountName(id, name) {
 
-                  
+
 
               //    var idString = id.toString();
               //    var divId = "#AccountNameField-" + idString;
