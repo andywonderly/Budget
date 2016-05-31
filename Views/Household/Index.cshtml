@@ -201,7 +201,16 @@
 
                 <div class="row">
 
-                    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                    @*@Html.ValidationSummary(true, "", new { @class = "text-danger" })*@
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        Enter a transaction name:
+                        <input type="text" name="Name" placeholder="Name" />
+                        @*@Html.EditorFor(model => model.Amount, new { htmlAttributes = new { @class = "form-control", @placeholder = "Name" } })
+                            @Html.ValidationMessageFor(model => model.Amount, "", new { @class = "text-danger" })
+                            @Html.EditorFor()*@
+                    </div>
                 </div>
                 <div class="row">
                     <div class="col-md-4">
@@ -216,6 +225,7 @@
                     <div class="col-md-4">
                         Choose a category:
                         @Html.DropDownList("CategoryId", null, htmlAttributes: new { @class = "form-control" })
+                        
                     </div>
                 </div>
                 <div class="row">

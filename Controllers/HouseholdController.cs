@@ -46,9 +46,9 @@ namespace BugTrackerForTemplate.Controllers
 
             List<Invitation> temp = model.PendingInvitations.ToList();
 
-            foreach(var item in temp)
+            foreach (var item in temp)
             {
-                if(item.RespondedTo == true)
+                if (item.RespondedTo == true)
                 {
                     model.PendingInvitations.Remove(item);
                 }
@@ -71,7 +71,7 @@ namespace BugTrackerForTemplate.Controllers
         }
 
         [Authorize]
-        public async Task<ActionResult> InviteConfirm([Bind(Include="InvitedEmail, HouseholdId")] InvitationViewModel model)
+        public async Task<ActionResult> InviteConfirm([Bind(Include = "InvitedEmail, HouseholdId")] InvitationViewModel model)
         {
             var currentUserId = System.Web.HttpContext.Current.User.Identity.GetUserId();
             ApplicationUser currentUser = db.Users.Find(currentUserId);
@@ -95,7 +95,7 @@ namespace BugTrackerForTemplate.Controllers
             List<Invitation> outstanding = db.Invitations.Where(n => n.InvitedEmail == model.InvitedEmail).ToList();
 
             //Test each invitation for being for the current household and whether it's been responded to
-            foreach(var item in outstanding)
+            foreach (var item in outstanding)
             {
                 if (item.HouseholdId == household.Id && item.RespondedTo == false)
                     model.AlreadyInvited = true;
@@ -156,7 +156,7 @@ namespace BugTrackerForTemplate.Controllers
             Household household = db.Households.Find(currentUser.HouseholdId);
 
 
-            if(household.Members.Count == 1)
+            if (household.Members.Count == 1)
                 ViewBag.Message = "Note: you are the only member of this household.  Leaving it will "
                                 + "cause it to be deleted.";
             return View();
@@ -175,7 +175,7 @@ namespace BugTrackerForTemplate.Controllers
             household.Members.Remove(currentUser);
             currentUser.HouseholdId = null;
 
-            if(household.Members.Count == 0)
+            if (household.Members.Count == 0)
             {
                 //Soft-delete the household.  This may not actually be necessary since the display
                 //of the household to the user is tied to their HouseholdId.  Aka, there is no program
@@ -187,11 +187,11 @@ namespace BugTrackerForTemplate.Controllers
                 //more importantly, cannot be accepted
                 List<Invitation> invitations = new List<Invitation>();
                 invitations = db.Invitations.Where(n => n.HouseholdId == household.Id).ToList();
-                
-                foreach(var item in invitations)
+
+                foreach (var item in invitations)
                 {
                     item.RespondedTo = true;
-                    db.Entry(item).Property("RespondedTo").IsModified = true;  
+                    db.Entry(item).Property("RespondedTo").IsModified = true;
                 }
             }
 
@@ -203,19 +203,19 @@ namespace BugTrackerForTemplate.Controllers
         }
 
         [Authorize]
-        public ActionResult Accept (int id)
+        public ActionResult Accept(int id)
         {
             Invitation invitation = db.Invitations.Find(id);
             //invitation.Id = id;
             invitation.HouseholdName = db.Households.Find(invitation.HouseholdId).Name;
-            
+
             return View(invitation);
         }
 
 
 
-        [Authorize]   
-        public ActionResult AcceptConfirm ([Bind(Include="Id")] InvitationViewModel model)
+        [Authorize]
+        public ActionResult AcceptConfirm([Bind(Include = "Id")] InvitationViewModel model)
         {
             //***SEND INVITATION AND HOUSEHOLD ID FROM FORM?  TO CONFIRM THAT YOU WERE INVITED
             //TO THE HOUSEHOLD YOU ARE JOINING
@@ -264,14 +264,14 @@ namespace BugTrackerForTemplate.Controllers
 
             db.Entry(invitation).State = EntityState.Modified;
             //db.Invitations.Attach(invitation);
-            
+
             db.SaveChanges();
 
             return RedirectToAction("CreateJoinHousehold", "Home");
         }
 
         [Authorize]
-        public ActionResult NewTransaction([Bind(Include = "Amount, AccountId, CategoryId, Expenditure")] TransactionViewModel model)
+        public ActionResult NewTransaction([Bind(Include = "Name, Amount, AccountId, CategoryId, Expenditure")] TransactionViewModel model)
         {
             //Send:
             //Categories
@@ -291,6 +291,7 @@ namespace BugTrackerForTemplate.Controllers
 
             Transaction transaction = new Transaction
             {
+                Name = model.Name,
                 Amount = model.Amount,
                 AccountId = model.AccountId,
                 Balance = account.Balance,
@@ -355,7 +356,7 @@ namespace BugTrackerForTemplate.Controllers
             db.SaveChanges();
 
             return RedirectToAction("Index", "Household");
-        
+
         }
 
         //[Authorize]
@@ -396,7 +397,7 @@ namespace BugTrackerForTemplate.Controllers
 
         [Authorize]
         [HttpPost]
-        public ActionResult _DeleteAccount([Bind(Include ="Id")] Account model)
+        public ActionResult _DeleteAccount([Bind(Include = "Id")] Account model)
         {
 
             Account account = db.Accounts.Find(model.Id);
@@ -415,8 +416,8 @@ namespace BugTrackerForTemplate.Controllers
             Household household = db.Households.Find(account.HouseholdId);
             List<Transaction> transactions = account.Transactions.ToList();
             List<Transaction> transactions2 = transactions.ToList();
-            
-            foreach(var item in transactions)
+
+            foreach (var item in transactions)
             {
                 if (item.Void == true)
                     transactions2.Remove(item);
@@ -425,17 +426,18 @@ namespace BugTrackerForTemplate.Controllers
             AccountViewModel model = new AccountViewModel();
             model.TransactionViewModels = new List<TransactionViewModel>();
 
-            foreach(var item in transactions2)
+            foreach (var item in transactions2)
             {
                 TransactionViewModel temp = new TransactionViewModel()
                 {
+                    Id = item.Id,
                     Amount = item.Amount,
                     OwnerUserName = db.Users.Find(item.OwnerUserId).DisplayName,
                     Balance = item.Balance,
                     Category = household.Categories.FirstOrDefault(n => n.Id == item.CategoryId).Name,
                     Reconciled = item.Reconciled,
                     Created = item.Created,
-                    
+
                 };
 
                 model.TransactionViewModels.Add(temp);
@@ -443,6 +445,73 @@ namespace BugTrackerForTemplate.Controllers
 
             return View(model);
         }
+
+        [Authorize]
+        public ActionResult EditTransaction(int id)
+        {
+            Transaction transaction = db.Transactions.Find(id);
+            Account account = db.Accounts.Find(transaction.AccountId);
+            Household household = db.Households.Find(account.HouseholdId);
+
+            TransactionViewModel model = new TransactionViewModel
+            {
+                Amount = transaction.Amount,
+                Balance = transaction.Balance,
+                CategoryId = transaction.CategoryId,
+                Description = transaction.Description,
+                Reconciled = transaction.Reconciled,
+                Void = transaction.Void,
+                Expenditure = transaction.Expenditure,
+                Name = transaction.Name,
+                Categories = household.Categories.ToList(),
+                AccountId = transaction.AccountId,
+            };
+
+            var x = household.Categories.ToList();
+
+            //var categoryIdSelected = household.Categories.Find(transaction.CategoryId);
+            //ViewBag.CategoryId = new SelectList(household.Categories, "Id", "Name", model.CategoryId);
+            //ViewBag.CatId = CatId;
+
+            return View(model);
+        }
+
+        [Authorize]
+        [HttpPost]
+        public ActionResult EditTransaction([Bind(Include = "Name,Id,Amount,CategoryId,AccountId")] TransactionViewModel model)
+        {
+            Transaction transaction = db.Transactions.Find(model.Id);
+            Account account = db.Accounts.Find(model.AccountId);
+
+            account.Balance = account.Balance + (model.Amount - transaction.Amount);
+
+            transaction.Name = model.Name;
+            transaction.Balance = transaction.Balance + (model.Amount - transaction.Amount);
+            transaction.Amount = model.Amount;
+
+
+            //transaction.CategoryId = model.CategoryId;
+            db.Entry(account).State = EntityState.Modified;
+            db.Entry(transaction).State = EntityState.Modified;
+            db.SaveChanges();
+
+            return RedirectToAction("Index", "Household");
+        }
+
+        [Authorize]
+        public ActionResult VoidTransaction(int id)
+        {
+
+            return View();
+        }
+
+        [Authorize]
+        public ActionResult DeleteTransaction(int id)
+        {
+
+            return View();
+        }
+        
 
 
 

@@ -369,6 +369,9 @@
     <Content Include="Views\Household\_AccountName.cshtml" />
     <Content Include="Views\Household\_DeleteAccount.cshtml" />
     <Content Include="Views\Household\_ListTransactions.cshtml" />
+    <Content Include="Views\Household\DeleteTransaction.cshtml" />
+    <Content Include="Views\Household\EditTransaction.cshtml" />
+    <Content Include="Views\Household\VoidTransaction.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

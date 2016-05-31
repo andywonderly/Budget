@@ -22,12 +22,77 @@
             Category: @item.Category
         </div>
         <div class="col-md-6">
-            Edit
+            Edit @Html.ActionLink("Edit","EditTransaction","Household", new { id = item.Id }, new { })
+            <button type="button" class="btn btn-primary" data-target="#TransactionVoid-@item.Id" data-toggle="collapse">Void toggle?</button>
+            <br /> 
+            Void @Html.ActionLink("Void","VoidTransaction","Household", new { id = item.Id }, new { })
             <br />
-            Void
-            <br />
-            Delete
+            Delete @Html.ActionLink("Delete","DeleteTransaction","Household", new { id = item.Id }, new { })
+            <button type="button" class="btn btn-primary" data-target="#TransactionDelete-@item.Id" data-toggle="collapse">Delete toggle?</button>
         </div>
     </div>
     <div style="min-height: 10px;"></div>
+
+    <div class="modal fade" id="TransactionVoid-@item.Id" role="dialog">
+        <div class="modal-dialog">
+
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Edit Account</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row" style="width: 256px; margin-left: 1px;">
+
+                        @using (Html.BeginForm("VoidTransaction", "Household", FormMethod.Post,
+                                                 new { enctype = "Multipart/form-data" }))
+                        {
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="Id" value="@item.Id" />       
+                            <button type="submit" class="btn btn-default" style="margin-top: 5px;">Confirm Void Action</button>
+                        }
+
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="modal fade" id="TransactionDelete-@item.Id" role="dialog">
+        <div class="modal-dialog">
+
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Confirm Deletion</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row" style="width: 256px; margin-left: 1px;">
+
+                        @using (Html.BeginForm("VoidTransaction", "Household", FormMethod.Post,
+                                         new { enctype = "Multipart/form-data" }))
+                        {
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="Id" value="@item.Id" />
+                            <button type="submit" class="btn btn-default" style="margin-top: 5px;">Confirm Delete Action</button>
+                        }
+
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
 }
