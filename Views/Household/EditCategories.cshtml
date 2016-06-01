@@ -1,0 +1,22 @@
+﻿@model Budget.Models.CategoryViewModel
+
+@{
+    Layout = "~/Views/Shared/TemplateLayout.cshtml";
+}
+
+<h3>Edit Household Transaction Categories</h3>
+<table>
+    @foreach (var item in Model.Categories)
+    {
+        <tr>
+            <td>
+                @item.Name
+            </td>
+            <td>
+                @Html.ActionLink("Edit name", "EditSingleCategory", new { id = item.Id })
+                <br />
+                @Html.ActionLink("Delete", "DeleteCategory", new { id = item.Id })
+            </td>
+        </tr>
+    }
+</table>

@@ -4,3 +4,16 @@
     Layout = "~/Views/Shared/TemplateLayout.cshtml";
 }
 
+
+<h3>Confirm voiding of the transaction @Html.Raw(Model.Name).</h3>
+
+@using (Html.BeginForm("VoidTransaction", "Household", FormMethod.Post,
+                                                                                 new { enctype = "Multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+
+
+    <input type="hidden" name="Id" value="@Model.Id" />
+                                    <br />
+                                    <button type="submit" class="btn btn-default" style="margin-top: 5px;">Confirm</button>
+}

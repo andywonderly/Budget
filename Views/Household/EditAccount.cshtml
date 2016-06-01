@@ -1,0 +1,41 @@
+﻿@model Budget.Models.Account
+
+@{
+    Layout = "~/Views/Shared/TemplateLayout.cshtml";
+}
+
+@using (Html.BeginForm("EditAccount", "Household", FormMethod.Post,
+                                                    new { enctype = "Multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="row">
+
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="col-md-4">
+            Account name: 
+            @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            Balance: 
+            @Html.EditorFor(model => model.Balance, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.Balance, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+
+    <div style="min-height: 5px;"></div>
+    <div class="row">
+        <div class="col-md-2">
+            <input type="hidden" value="@Model.Id" name="Id" />
+            @Html.ActionLink("Back", "Index", "Household")
+            <br />
+            <input type="submit" value="Confirm Edits" class="btn btn-default" />
+        </div>
+
+    </div>
+}
+<br /> or @Html.ActionLink("Delete this account.","DeleteAccount","Household", new { id = Model.Id }, new { })

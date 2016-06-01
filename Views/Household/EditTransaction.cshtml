@@ -3,9 +3,9 @@
 @{
     Layout = "~/Views/Shared/TemplateLayout.cshtml";
 }
-
+<h3>Edit transaction fields.</h3>
 @using (Html.BeginForm("EditTransaction", "Household", FormMethod.Post,
-                                                    new { enctype = "Multipart/form-data" }))
+                                                                new { enctype = "Multipart/form-data" }))
 {
     @Html.AntiForgeryToken()
 
@@ -24,18 +24,18 @@
         </div>
     </div>
     @*<div class="row">
-        <div class="col-md-4">
-            @Html.DropDownList("CategoryId", null, htmlAttributes: new { @class = "form-control" })
-            
-            @Html.DropDownListFor(n => n.CategoryId, null, htmlAttributes: new { @class = "form-control" })
-            @Html.ValidationMessageFor(model => model.CategoryId, "", new { @class = "text-danger" })
-        </div>
-    </div>*@
+            <div class="col-md-4">
+                @Html.DropDownList("CategoryId", null, htmlAttributes: new { @class = "form-control" })
+
+                @Html.DropDownListFor(n => n.CategoryId, null, htmlAttributes: new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.CategoryId, "", new { @class = "text-danger" })
+            </div>
+        </div>*@
 
     <div style="min-height: 5px;"></div>
     <div class="row">
         <div class="col-md-2">
-            <input type="hidden" value="@Model.AccountId" name="AccountId" />
+            <input type="hidden" value="@Model.AccountId" name="Id" />
             <input type="submit" value="Confirm Edits" class="btn btn-default" />
         </div>
 

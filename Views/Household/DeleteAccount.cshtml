@@ -1,0 +1,29 @@
+﻿@model Budget.Models.Account
+
+@{
+    Layout = "~/Views/Shared/TemplateLayout.cshtml";
+}
+
+@using (Html.BeginForm("DeleteAccount", "Household", FormMethod.Post,
+                                                    new { enctype = "Multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="row">
+
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="col-md-4">
+<h3>Confirm account deletion.</h3>
+        </div>
+    </div>
+
+
+    <div style="min-height: 5px;"></div>
+    <div class="row">
+        <div class="col-md-2">
+            <input type="hidden" value="@Model.Id" name="Id" />
+            <input type="submit" value="Confirm Deletion" class="btn btn-default" />
+        </div>
+
+    </div>
+}

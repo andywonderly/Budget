@@ -340,13 +340,14 @@ namespace BugTrackerForTemplate.Controllers
         }
 
         [Authorize]
-        public ActionResult _EditAccountName(int id)
+        public ActionResult EditAccount(int id)
         {
             Account model = db.Accounts.Find(id);
             return View(model);
         }
 
         [Authorize]
+        [HttpPost]
         public ActionResult EditAccount([Bind(Include = "Id, Name, Balance")] Account model)
         {
             Account account = db.Accounts.Find(model.Id);
@@ -357,6 +358,26 @@ namespace BugTrackerForTemplate.Controllers
 
             return RedirectToAction("Index", "Household");
 
+        }
+
+        [Authorize]
+        public ActionResult DeleteAccount(int id)
+        {
+            Account model = db.Accounts.Find(id);
+
+            return View(model);
+        }
+
+        [Authorize]
+        [HttpPost]
+        public ActionResult DeleteAccount([Bind(Include ="Id")] Account model)
+        {
+            Account account = db.Accounts.Find(model.Id);
+            account.Active = false;
+            db.Entry(account).State = EntityState.Modified;
+            db.SaveChanges();
+
+            return RedirectToAction("Index", "Household");
         }
 
         //[Authorize]
@@ -481,7 +502,7 @@ namespace BugTrackerForTemplate.Controllers
         public ActionResult EditTransaction([Bind(Include = "Name,Id,Amount,CategoryId,AccountId")] TransactionViewModel model)
         {
             Transaction transaction = db.Transactions.Find(model.Id);
-            Account account = db.Accounts.Find(model.AccountId);
+            Account account = db.Accounts.Find(transaction.AccountId);
 
             account.Balance = account.Balance + (model.Amount - transaction.Amount);
 
@@ -501,19 +522,108 @@ namespace BugTrackerForTemplate.Controllers
         [Authorize]
         public ActionResult VoidTransaction(int id)
         {
+            Transaction transaction = db.Transactions.Find(id);
+            TransactionViewModel model = new TransactionViewModel
+            {
+                Id = transaction.Id,
+                Name = transaction.Name,
+            };
+            return View(model);
+        }
 
-            return View();
+        [Authorize]
+        [HttpPost]
+        public ActionResult VoidTransaction([Bind(Include ="Id")] TransactionViewModel model)
+        {
+            Transaction transaction = db.Transactions.Find(model.Id);
+            transaction.Void = true;
+
+            Account account = db.Accounts.Find(transaction.AccountId);
+            account.Balance = account.Balance - transaction.Amount;
+
+            db.Entry(account).State = EntityState.Modified;
+            db.Entry(transaction).State = EntityState.Modified;
+            db.SaveChanges();
+
+            return RedirectToAction("Index", "Household");
         }
 
         [Authorize]
         public ActionResult DeleteTransaction(int id)
         {
+            Transaction transaction = db.Transactions.Find(id);
+            TransactionViewModel model = new TransactionViewModel
+            {
+                Id = transaction.Id,
+                Name = transaction.Name,
+            };
 
-            return View();
+
+            return View(model);
         }
-        
+
+        [Authorize]
+        [HttpPost]
+        public ActionResult DeleteTransaction([Bind(Include ="Id")] TransactionViewModel model)
+        {
+            Transaction transaction = db.Transactions.Find(model.Id);
+            db.Transactions.Remove(transaction);
+
+            Account account = db.Accounts.Find(transaction.AccountId);
+            account.Balance = account.Balance - transaction.Amount;
+
+            db.Entry(account).State = EntityState.Modified;
+            db.SaveChanges();
+
+            return RedirectToAction("Index", "Household");
+        }
+
+        [Authorize]
+        public ActionResult EditCategories(int id)
+        {
+            Household household = db.Households.Find(id);
+            CategoryViewModel model = new CategoryViewModel();
+            model.Categories = household.Categories.ToList();
+            return View(model);
+        }
+
+        [Authorize]
+        [HttpPost]
+        public ActionResult EditCategories([Bind(Include ="Id")] CategoryViewModel model)
+        {
+            return RedirectToAction("Index", "Household");
+        }
+
+        [Authorize]
+        public ActionResult EditSingleCategory([Bind(Include ="Id,HouseholdId")] CategoryViewModel model)
+        {
+            Household household = db.Households.Find(model.HouseholdId);
+            Category category = household.Categories.FirstOrDefault(n => n.Id == model.Id);
+            model.Name = category.Name;
+            return View(model);
+        }
+
+        [Authorize]
+        [HttpPost]
+        public ActionResult EditSingleCategory([Bind(Include ="Id,Name,HouseholdId")] CategoryViewModel model)
+        {
+            Household household = db.Households.Find(model.HouseholdId);
+            Category category = household.Categories.FirstOrDefault(n => n.Id == model.Id);
+            string oldCategoryName = category.Name;
+            category.Name = model.Name;
 
 
+
+
+
+            List<Transaction> transactions = account.Transactions.Where(n => n.CategoryId == )
+
+            db.Entry(transaction).State = EntityState.Modified;
+            db.SaveChanges();
+
+
+            return RedirectToAction("EditCategories", "Household", new { });
+        }
 
     }
 

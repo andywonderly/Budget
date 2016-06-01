@@ -5,14 +5,14 @@
     Layout = "~/Views/Shared/TemplateLayout.cshtml";
 }
 
-<button class="btn-default" onclick="GetChart()">Chart</button>
+@*<button class="btn-default" onclick="GetChart()">Chart</button>
 
 <div id="MyChart" style="height: 200px;">
 
     <button class="btn-default" onclick="EditAccountName(1)">Edit Account Name</button>
     <div id="Account-1" style="height: 256px;"></div>
     
-</div>
+</div>*@
 
 <h3>Your household</h3>
 <div>
@@ -58,6 +58,7 @@
     <br />
     @Html.ActionLink("Invite a user to this household", "Invite", new { id = Model.Id })
     @Html.ActionLink("Leave this household", "LeaveHousehold", new { id = Model.Id })
+    @Html.ActionLink("Edit transaction categories","EditCategories", new { id = Model.Id })
 
 
 </div>
@@ -115,7 +116,8 @@
     <div class="row" style="border: 3px solid black; width: 512px; margin-top: 5px; margin-bottom: 5px; border-radius: 10px;">
         <div id="AccountNameField-@item.Id" style="display: inline;">
             <h3 style="display: inline;">@item.Name </h3>
-            <button type="button" data-toggle="modal" data-target="#Account-@item.Id" style="border: none; background-color: transparent; display:inline;" ><i class="fa fa-edit"></i></button>
+            @Html.ActionLink("Edit or delete account", "EditAccount", "Household", new { id = item.Id }, new { })
+            
             @*<button class="ed" data-id="@Model.Id" id="@Model.Id" type="button" style="border: none; background-color: transparent; display:inline;" onclick="EditAccountName(id)"><i class="fa fa-edit"></i></button>*@
         </div>    
     
@@ -172,9 +174,9 @@
 
 
 
-    @*<div id="AccountNameField" style="display: inline;">*@
-        @*@Html.Action("_AccountName","Household",new { id = item.Id })*@
-            @*<div id="AccountNameField-@item.Id" style="display: inline;">
+    @*@<div id="AccountNameField" style="display: inline;">
+       @Html.Action("_AccountName","Household",new { id = item.Id })
+            <div id="AccountNameField-@item.Id" style="display: inline;">
                 <h4 style="display: inline;">@item.Name </h4>
                 <button class="ed" data-id="@item.Id" id="@item.Id" type="button" style="border: none; background-color: transparent; display:inline;" onclick="EditAccountName(id)"><i class="fa fa-edit"></i></button>
 
@@ -248,4 +250,7 @@
             @Html.Action("_ListTransactions","Household", new { id = item.Id })
         </div>
     </div>
+       
+       
 }
+        
