@@ -30,9 +30,9 @@ namespace Budget.Migrations
 
             context.Categories.AddOrUpdate(
                 p => p.Name,
-                new Category { Name = "Utilities" },
-                new Category { Name = "Groceries" },
-                new Category { Name = "TV-Internet" }
+                new Category { Name = "Utilities", Stock = true, Deleted = false },
+                new Category { Name = "Groceries", Stock = true, Deleted = false },
+                new Category { Name = "TV-Internet", Stock = true, Deleted = false }
             );
 
             var roleManager = new RoleManager<IdentityRole>(

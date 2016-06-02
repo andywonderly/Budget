@@ -127,21 +127,44 @@ namespace BugTrackerForTemplate.Controllers
                 OwnerUserId = currentUserId,
                 Created = DateTimeOffset.Now,
                 Active = true,
-                Categories = db.Categories.ToList(),
+               
             };
 
             //Add current user
             household.Members = new List<ApplicationUser>();
             household.Members.Add(currentUser);
-
-            //Add it to the database
             db.Households.Add(household);
             db.SaveChanges();
 
-            //Set the current user's household Id to the household that was just created & added
-            currentUser.HouseholdId = db.Households.FirstOrDefault(u => u.OwnerUserId == currentUserId && u.Created == household.Created).Id;
-            db.Entry(currentUser).State = EntityState.Modified;
 
+            //Add the stock categories
+            List<Category> stock = db.Categories.Where(s => s.Stock == true).ToList();
+            //currentUser.HouseholdId = db.Households.FirstOrDefault(u => u.OwnerUserId == currentUserId && u.Created == household.Created).Id;
+            Household newHousehold = db.Households.Find(currentUser.HouseholdId);
+            newHousehold.Categories = new List<Category>();
+            currentUser.HouseholdId = newHousehold.Id;
+            foreach(var item in stock)
+            {
+                Category temp = new Category
+                {
+                    
+                    Household_Id = household.Id,
+                    Name = item.Name,
+                    Deleted = false,
+                    Stock = false,
+                };
+
+                db.Categories.Add(temp);
+                newHousehold.Categories.Add(temp);
+                //db.SaveChanges();
+            }
+
+
+
+            //Set the current user's household Id to the household that was just created & added
+            //currentUser.HouseholdId = db.Households.FirstOrDefault(u => u.OwnerUserId == currentUserId && u.Created == household.Created).Id;
+            db.Entry(currentUser).State = EntityState.Modified;
+            db.Entry(newHousehold).State = EntityState.Modified;
             db.SaveChanges();
 
             ViewBag.Message = "Household successfully created and joined.";

@@ -4,7 +4,7 @@
     Layout = "~/Views/Shared/TemplateLayout.cshtml";
 }
 
-@using (Html.BeginForm("EditSingleCategory", "Household", FormMethod.Post,
+@using (Html.BeginForm("DeleteCategory", "Household", FormMethod.Post,
                                                     new { enctype = "Multipart/form-data" }))
 {
     @Html.AntiForgeryToken()
@@ -13,9 +13,10 @@
 
         @Html.ValidationSummary(true, "", new { @class = "text-danger" })
         <div class="col-md-4">
-            Account name: 
-            @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control" } })
-            @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+            <h3>Confirm deletion of the category @Model.Name:</h3>
+            <h5>Please note that deleting a category is a "soft-delete" in which the category
+            will remain in the system, but not be available to select when submitting future
+            transactions.</h5>
         </div>
     </div>
     <div style="min-height: 5px;"></div>

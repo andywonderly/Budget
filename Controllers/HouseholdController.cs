@@ -54,7 +54,7 @@ namespace BugTrackerForTemplate.Controllers
                 }
             }
 
-            model.Categories = household.Categories.ToList();
+            model.Categories = household.Categories.Where(d => d.Deleted == false).ToList();
             ViewBag.CategoryId = new SelectList(model.Categories, "Id", "Name");
 
             return View(model);
@@ -595,11 +595,18 @@ namespace BugTrackerForTemplate.Controllers
         }
 
         [Authorize]
-        public ActionResult EditSingleCategory([Bind(Include ="Id,HouseholdId")] CategoryViewModel model)
+        public ActionResult EditSingleCategory(int id)
         {
-            Household household = db.Households.Find(model.HouseholdId);
-            Category category = household.Categories.FirstOrDefault(n => n.Id == model.Id);
-            model.Name = category.Name;
+            var currentUserId = System.Web.HttpContext.Current.User.Identity.GetUserId();
+            ApplicationUser currentUser = db.Users.Find(currentUserId);
+            Household household = db.Households.Find(currentUser.HouseholdId);
+            Category category = household.Categories.FirstOrDefault(n => n.Id == id);
+            EditCategoryViewModel model = new EditCategoryViewModel
+            {
+                Name = category.Name,
+                Id = category.Id,
+                HouseholdId = household.Id,
+            };
             return View(model);
         }
 
@@ -609,22 +616,86 @@ namespace BugTrackerForTemplate.Controllers
         {
             Household household = db.Households.Find(model.HouseholdId);
             Category category = household.Categories.FirstOrDefault(n => n.Id == model.Id);
-            string oldCategoryName = category.Name;
+            
+            //Set new name
             category.Name = model.Name;
-
-
-
-
-
-            List<Transaction> transactions = account.Transactions.Where(n => n.CategoryId == )
-
-            db.Entry(transaction).State = EntityState.Modified;
+            
+            db.Entry(household).State = EntityState.Modified;
             db.SaveChanges();
 
 
-            return RedirectToAction("EditCategories", "Household", new { });
+            return RedirectToAction("EditCategories", "Household", new { id = household.Id });
         }
 
+        [Authorize]
+        public ActionResult DeleteCategory(int id)
+        {
+            Category category = db.Categories.Find(id);
+            EditCategoryViewModel model = new EditCategoryViewModel
+            {
+                Id = category.Id,
+                Name = category.Name,
+
+            };
+            return View(model);
+        }
+
+        [Authorize]
+        [HttpPost]
+        public ActionResult DeleteCategory([Bind(Include ="Id")] EditCategoryViewModel model)
+        {
+            Category category = db.Categories.Find(model.Id);
+            category.Deleted = true;
+            db.Entry(category).State = EntityState.Modified;
+            db.SaveChanges();
+
+            return RedirectToAction("EditCategories", "Household", new { id = category.Household_Id });
+            //NEED CODE TO WHERE AVAILABLE TRANSACTION CATEGORIES ARE ONLY CATEGORIES WHERE DELETED == FALSE
+        }
+
+        [Authorize]
+        public ActionResult RestoreCategory(int id)
+        {
+            Category category = db.Categories.Find(id);
+            category.Deleted = false;
+            db.Entry(category).State = EntityState.Modified;
+            db.SaveChanges();
+
+            return RedirectToAction("EditCategories", "Household", new { id = category.Household_Id });
+            //NEED CODE TO WHERE AVAILABLE TRANSACTION CATEGORIES ARE ONLY CATEGORIES WHERE DELETED == FALSE
+        }
+
+        [Authorize]
+        public ActionResult TransactionDetail(int id)
+        {
+            Account account = db.Accounts.FirstOrDefault(h => h.Id == id);
+            Household household = db.Households.Find(account.HouseholdId);
+            List<TransactionViewModel> transactions = new List<TransactionViewModel>();
+            var transactions2 = account.Transactions.ToList();
+
+            foreach(var item in transactions2)
+            {
+                TransactionViewModel temp = new TransactionViewModel
+                {
+                    Name = item.Name,
+                    OwnerUserName = db.Users.Find(item.OwnerUserId).DisplayName,
+                    Amount = item.Amount,
+                    Balance = item.Balance,
+                    Expenditure = item.Expenditure,
+                    Reconciled = item.Reconciled,
+                    Void = item.Void,
+                    Created = item.Created,
+                    Category = household.Categories.FirstOrDefault(n => n.Id == item.CategoryId).Name,
+
+                };
+
+                transactions.Add(temp);
+            }
+
+            IEnumerable<TransactionViewModel> model = transactions.ToList();
+
+            return View(model);
+        }
     }
 
 

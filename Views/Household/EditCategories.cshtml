@@ -9,13 +9,30 @@
     @foreach (var item in Model.Categories)
     {
         <tr>
-            <td>
+            <td style="padding: 5px;">
                 @item.Name
             </td>
-            <td>
+            <td style="padding: 5px; width: 172px;">
                 @Html.ActionLink("Edit name", "EditSingleCategory", new { id = item.Id })
-                <br />
-                @Html.ActionLink("Delete", "DeleteCategory", new { id = item.Id })
+                //
+                @if (item.Deleted == true)
+                {
+                    @Html.ActionLink("Restore","RestoreCategory", new { id = item.Id })
+                }
+                else
+                {
+                    @Html.ActionLink("Delete","DeleteCategory", new { id = item.Id })
+                }
+            </td>
+            <td style="padding: 5px;">
+                
+                @if(item.Deleted == true)
+                {
+                    @Html.Raw("Deleted")
+                } else
+                {
+                    @Html.Raw("Active")
+                }
             </td>
         </tr>
     }
