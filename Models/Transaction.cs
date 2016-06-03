@@ -19,6 +19,8 @@ namespace Budget.Models
         public bool Expenditure { get; set; }
         public bool Void { get; set; }
         public DateTimeOffset Created { get; set; }
+        public virtual Account Account { get; set; }
+        public virtual ICollection<Transaction> ReconciledTransactions { get; set; }
         //public virtual ICollection<Category> TransactionCategories { get; set; }
     }
 
@@ -39,5 +41,8 @@ namespace Budget.Models
         public IEnumerable<Category> Categories { get; set; }
         public DateTimeOffset Created { get; set; }
         public bool Void { get; set; }
+
+        public string AccountName { get; set; }
+        public float AccountBalance { get; set; }
     }
 }

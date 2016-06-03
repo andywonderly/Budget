@@ -28,12 +28,15 @@ namespace Budget.Migrations
             //    );
             //
 
-            context.Categories.AddOrUpdate(
-                p => p.Name,
-                new Category { Name = "Utilities", Stock = true, Deleted = false },
-                new Category { Name = "Groceries", Stock = true, Deleted = false },
-                new Category { Name = "TV-Internet", Stock = true, Deleted = false }
-            );
+            if ((context.Categories.Count() < 1))
+            {
+                context.Categories.AddOrUpdate(
+                    p => p.Name,
+                    new Category { Name = "Utilities", Stock = true, Deleted = false },
+                    new Category { Name = "Groceries", Stock = true, Deleted = false },
+                    new Category { Name = "TV-Internet", Stock = true, Deleted = false }
+                );
+            }
 
             var roleManager = new RoleManager<IdentityRole>(
             new RoleStore<IdentityRole>(context));

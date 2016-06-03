@@ -319,6 +319,11 @@ namespace BugTrackerForTemplate.Controllers
         [Authorize]
         public ActionResult CreateAccount([Bind(Include = "Name, Balance, HouseholdId")] Account account)
         {
+            if(!ModelState.IsValid)
+            {
+                return RedirectToAction("Index", "Household");
+            }
+
             var currentUserId = System.Web.HttpContext.Current.User.Identity.GetUserId();
             ApplicationUser currentUser = db.Users.Find(currentUserId);
             Household household = db.Households.Find(currentUser.HouseholdId);
@@ -328,10 +333,34 @@ namespace BugTrackerForTemplate.Controllers
             {
                 account.OwnerUserId = currentUser.Id;
                 account.Active = true;
+                account.Created = DateTimeOffset.Now;
             }
 
             db.Accounts.Add(account);
             household.Accounts.Add(account);
+
+            db.SaveChanges();
+
+            Account newAccount = db.Accounts.First(n => n.OwnerUserId == account.OwnerUserId && n.Created == account.Created);
+
+            Transaction initialBalance = new Transaction
+            {
+                Amount = account.Balance,
+                OwnerUserId = currentUserId,
+                AccountId = newAccount.Id,
+                Balance = account.Balance,
+                Name = "Initial balance",
+                Reconciled = true,
+                Void = false,
+                Created = account.Created,
+                Expenditure = false,
+                CategoryId = household.Categories.First().Id,
+            };
+
+            db.Transactions.Add(initialBalance);
+            account.Transactions.Add(initialBalance);
+            household.Accounts.Add(account);
+
             db.SaveChanges();
 
             return RedirectToAction("Index", "Household");
@@ -352,7 +381,7 @@ namespace BugTrackerForTemplate.Controllers
         {
             Account account = db.Accounts.Find(model.Id);
             account.Name = model.Name;
-            account.Balance = model.Balance;
+            //account.Balance = model.Balance;
             db.Entry(account).State = EntityState.Modified;
             db.SaveChanges();
 
@@ -447,17 +476,33 @@ namespace BugTrackerForTemplate.Controllers
             AccountViewModel model = new AccountViewModel();
             model.TransactionViewModels = new List<TransactionViewModel>();
 
+            //TransactionViewModel temp = new TransactionViewModel();
+
             foreach (var item in transactions2)
             {
-                TransactionViewModel temp = new TransactionViewModel()
+                //TransactionViewModel temp = new TransactionViewModel
+                //{
+                //temp.Id = item.Id;
+                //temp.Amount = item.Amount;
+                //temp.OwnerUserName = db.Users.Find(item.OwnerUserId).Email;
+                //temp.Balance = item.Balance;
+                //temp.Category = household.Categories.FirstOrDefault(n => n.Id == item.CategoryId).Name;
+                //temp.Reconciled = item.Reconciled;
+                //temp.Created = item.Created;
+                //temp.Name = item.Name;
+
+                //};
+
+                TransactionViewModel temp = new TransactionViewModel
                 {
-                    Id = item.Id,
-                    Amount = item.Amount,
-                    OwnerUserName = db.Users.Find(item.OwnerUserId).DisplayName,
-                    Balance = item.Balance,
-                    Category = household.Categories.FirstOrDefault(n => n.Id == item.CategoryId).Name,
-                    Reconciled = item.Reconciled,
-                    Created = item.Created,
+                Id = item.Id,
+                Amount = item.Amount,
+                OwnerUserName = db.Users.Find(item.OwnerUserId).Email,
+                Balance = item.Balance,
+                Category = household.Categories.FirstOrDefault(n => n.Id == item.CategoryId).Name,
+                Reconciled = item.Reconciled,
+                Created = item.Created,
+                Name = item.Name,
 
                 };
 
@@ -519,33 +564,36 @@ namespace BugTrackerForTemplate.Controllers
             return RedirectToAction("Index", "Household");
         }
 
+        //[Authorize]
+        //public ActionResult VoidTransaction(int id)
+        //{
+        //    Transaction transaction = db.Transactions.Find(id);
+        //    TransactionViewModel model = new TransactionViewModel
+        //    {
+        //        Id = transaction.Id,
+        //        Name = transaction.Name,
+        //    };
+        //    return View(model);
+        //}
+
         [Authorize]
+        //[HttpPost]
         public ActionResult VoidTransaction(int id)
         {
             Transaction transaction = db.Transactions.Find(id);
-            TransactionViewModel model = new TransactionViewModel
-            {
-                Id = transaction.Id,
-                Name = transaction.Name,
-            };
-            return View(model);
-        }
-
-        [Authorize]
-        [HttpPost]
-        public ActionResult VoidTransaction([Bind(Include ="Id")] TransactionViewModel model)
-        {
-            Transaction transaction = db.Transactions.Find(model.Id);
-            transaction.Void = true;
-
             Account account = db.Accounts.Find(transaction.AccountId);
-            account.Balance = account.Balance - transaction.Amount;
 
-            db.Entry(account).State = EntityState.Modified;
-            db.Entry(transaction).State = EntityState.Modified;
-            db.SaveChanges();
+            if (transaction.Void == false)
+            {
+                transaction.Void = true;
+                account.Balance -= transaction.Amount;
 
-            return RedirectToAction("Index", "Household");
+                db.Entry(account).State = EntityState.Modified;
+                db.Entry(transaction).State = EntityState.Modified;
+                db.SaveChanges();
+            }
+
+            return RedirectToAction("TransactionDetail", "Household", new { id = account.Id });
         }
 
         [Authorize]
@@ -677,6 +725,7 @@ namespace BugTrackerForTemplate.Controllers
             {
                 TransactionViewModel temp = new TransactionViewModel
                 {
+                    Id = item.Id,
                     Name = item.Name,
                     OwnerUserName = db.Users.Find(item.OwnerUserId).DisplayName,
                     Amount = item.Amount,
@@ -686,7 +735,10 @@ namespace BugTrackerForTemplate.Controllers
                     Void = item.Void,
                     Created = item.Created,
                     Category = household.Categories.FirstOrDefault(n => n.Id == item.CategoryId).Name,
-
+                    //Storing the account name and balance here is inefficient, but it's the quickest
+                    //way to get it done at the moment.
+                    AccountName = account.Name,
+                    AccountBalance = account.Balance,
                 };
 
                 transactions.Add(temp);
@@ -695,6 +747,84 @@ namespace BugTrackerForTemplate.Controllers
             IEnumerable<TransactionViewModel> model = transactions.ToList();
 
             return View(model);
+        }
+
+        [Authorize]
+        public ActionResult UpdateAccountBalance([Bind(Include ="Balance,Id")] Account model)
+        {
+            var currentUserId = System.Web.HttpContext.Current.User.Identity.GetUserId();
+            ApplicationUser currentUser = db.Users.Find(currentUserId);
+            Account account = db.Accounts.Find(model.Id);
+            Household household = db.Households.Find(account.HouseholdId);
+            var difference = model.Balance - account.Balance;
+
+            
+            Transaction transaction = new Transaction
+            {
+                Amount = difference,
+                OwnerUserId = currentUserId,
+                CategoryId = household.Categories.First().Id,
+                Expenditure = false,
+                Reconciled = true,
+                AccountId = account.Id,
+                Name = "Balance update/reconciliation",
+                Created = DateTimeOffset.Now,
+                Balance = model.Balance,
+                
+            };
+            //ATTACHED
+            //Get existing transactions so they can be added as members of the reconciliation transaction.
+            //The purpose of this is so that we can easily un-reconcile them if this transaction is voided.
+            List<Transaction> existingTransactions = db.Transactions.Where(n => n.AccountId == account.Id).ToList();
+
+            //Remove all member transactions from existing transactions to ensure that a transaction can only
+            //be a member of one transaction.  Basically, whatever the latest reconciliation transaction is
+            //will be the only transaction with other transactions as members.  And in the same loop, we add
+            //all
+            foreach (var item in existingTransactions)
+            {
+                //item.ReconciledTransactions.Clear();
+                item.Reconciled = true;
+                db.Entry(item).State = EntityState.Modified;
+                //transaction.ReconciledTransactions.Add(item);
+            }
+
+
+            //db.Transactions.Add(transaction);
+            
+            //The following code is not necessary -- its functionality was combined with the foreach loop above
+            //var transactions = db.Transactions.Where(i => i.AccountId == account.Id).ToList();
+
+            //foreach(var item in transactions)
+            //{
+            //    item.Reconciled = true;
+            //    db.Entry(item).State = EntityState.Modified;
+            //}
+
+            db.SaveChanges();
+
+            return RedirectToAction("Index", "Household");
+        }
+
+        [Authorize]
+        public ActionResult RestoreTransaction(int id)
+        {
+            Transaction transaction = db.Transactions.Find(id);
+            Account account = db.Accounts.Find(transaction.AccountId);
+
+            if (transaction.Void == true)
+            {
+                transaction.Void = false;
+                db.Entry(transaction).State = EntityState.Modified;
+
+                account.Balance += transaction.Amount;
+                db.Entry(account).State = EntityState.Modified;
+
+                db.SaveChanges();
+            }
+
+            return RedirectToAction("TransactionDetail", "Household", new { id = account.Id });
+            
         }
     }
 

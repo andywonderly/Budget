@@ -16,8 +16,8 @@
         src="https://cdn.datatables.net/1.10.9/js/jquery.dataTables.min.js"></script>
 
 <h2>@ViewBag.Title</h2>
-
-
+<h3>Account: @Model.First().AccountName</h3>
+<h3>Balance: $@Model.First().AccountBalance</h3>
 
 <hr />
 
@@ -43,11 +43,11 @@
                 @Html.DisplayNameFor(model => model.Category)
             </th>
             <th>
-                none
+                @Html.DisplayNameFor(model => model.Void)
             </th>
-            <th>
+            @*<th>
                 none
-            </th>
+            </th>*@
             <th>
                 @Html.DisplayNameFor(model => model.Reconciled)
             </th>
@@ -80,16 +80,26 @@
                     @Html.DisplayFor(modelItem => item.Category)
                 </td>
                 <td>
-                    none    
+                    @Html.DisplayFor(modelItem => item.Void)    
                 </td>
-                <td>
+                @*<td>
                     none
-                </td>
+                </td>*@
                 <td>
                     @Html.DisplayFor(model => item.Reconciled)
                 </td>
                 <td>
-                    ACTIONS
+                    @Html.ActionLink("Edit", "EditTransaction", "Household", new { id = item.Id }, new { })
+                    //
+                    @if (item.Void == false)
+                    {
+                        @Html.ActionLink("Void", "VoidTransaction", "Household", new { id = item.Id }, new { })
+                    }
+                    else
+                    {
+                        @Html.ActionLink("Restore", "RestoreTransaction", "Household", new { id = item.Id }, new { })
+                    }
+                    
                 </td>
             </tr>
         }

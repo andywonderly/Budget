@@ -115,9 +115,10 @@
 
     <div class="row" style="border: 3px solid black; width: 512px; margin-top: 5px; margin-bottom: 5px; border-radius: 10px;">
         <div id="AccountNameField-@item.Id" style="display: inline;">
-            <h3 style="display: inline;">@item.Name </h3>
-            @Html.ActionLink("Edit or delete account", "EditAccount", "Household", new { id = item.Id }, new { })
-            
+            <h4 style="display: inline;">Name: @item.Name </h4>
+            <div style="display: inline; background-color: lightgray; margin: 2px; padding: 2px;">
+                @Html.ActionLink("Edit / Update balance", "EditAccount", "Household", new { id = item.Id }, new { })
+            </div>
             @*<button class="ed" data-id="@Model.Id" id="@Model.Id" type="button" style="border: none; background-color: transparent; display:inline;" onclick="EditAccountName(id)"><i class="fa fa-edit"></i></button>*@
         </div>    
     
@@ -194,7 +195,7 @@
         }
         <br />
         <h4>Recent Transactions</h4>
-        @Html.ActionLink("Detail View","TransactionDetail", new { id = item.Id })
+        @Html.ActionLink("Transactions Detailed View","TransactionDetail", new { id = item.Id })
         <br />
         <button type="button" class="btn btn-primary" data-toggle="collapse" data-target="#NewTransaction-@item.Id">New transaction</button>
         <div id="NewTransaction-@item.Id" class="collapse">
@@ -219,7 +220,7 @@
                 <div class="row">
                     <div class="col-md-4">
                         Enter a dollar amount:
-                        <input type="number" name="Amount" />
+                        <input type="number" name="Amount" step="any" placeholder="Amount"/>
                         @*@Html.EditorFor(model => model.Amount, new { htmlAttributes = new { @class = "form-control", @placeholder = "Name" } })
                             @Html.ValidationMessageFor(model => model.Amount, "", new { @class = "text-danger" })
                             @Html.EditorFor()*@

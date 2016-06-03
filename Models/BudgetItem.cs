@@ -12,8 +12,12 @@ namespace Budget.Models
         public string Description { get; set; }
         public float Amount { get; set; }
         public string Frequency { get; set; }
+        public int HouseholdId { get; set; }
         public DateTimeOffset Created { get; set; }
         public DateTimeOffset Updated { get; set; }
         public int CategoryId { get; set; }
+        public bool Void { get; set; }
+        public bool Deleted { get; set; }
+        public virtual Household Household { get; set; }
     }
 }

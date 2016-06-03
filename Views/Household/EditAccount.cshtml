@@ -8,34 +8,74 @@
                                                     new { enctype = "Multipart/form-data" }))
 {
     @Html.AntiForgeryToken()
+    <div style="border: 3px solid black; border-radius: 5px; width: 512px; margin-bottom: 20px; padding: 5px;">
+        <div class="row">
 
-    <div class="row">
+            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+            <div class="col-md-4">
+                Account name:
 
-        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-        <div class="col-md-4">
-            Account name: 
-            @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control" } })
-            @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+                <input type="text" name="Name" value="@Model.Name" placeho @*@Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })*@ lder="@Model.Name" />
+            </div>
         </div>
-    </div>
-    <div class="row">
-        <div class="col-md-4">
-            Balance: 
-            @Html.EditorFor(model => model.Balance, new { htmlAttributes = new { @class = "form-control" } })
-            @Html.ValidationMessageFor(model => model.Balance, "", new { @class = "text-danger" })
+        @*<div class="row">
+                <div class="col-md-4">
+                    Balance:
+                    <input type="number" name="Balance" value="@Model.Balance" step="any"/>
+                </div>
+            </div>*@
+
+
+        <div style="min-height: 5px;"></div>
+        <div class="row">
+            <div class="col-md-2">
+                <input type="hidden" value="@Model.Id" name="Id" />
+
+                <br />
+                <input type="submit" value="Update name" class="btn btn-default" />
+            </div>
+
         </div>
-    </div>
-
-
-    <div style="min-height: 5px;"></div>
-    <div class="row">
-        <div class="col-md-2">
-            <input type="hidden" value="@Model.Id" name="Id" />
-            @Html.ActionLink("Back", "Index", "Household")
-            <br />
-            <input type="submit" value="Confirm Edits" class="btn btn-default" />
-        </div>
-
     </div>
 }
-<br /> or @Html.ActionLink("Delete this account.","DeleteAccount","Household", new { id = Model.Id }, new { })
+
+@using (Html.BeginForm("UpdateAccountBalance", "Household", FormMethod.Post,
+                                                                new { enctype = "Multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div style="border: 3px solid black; border-radius: 5px; width: 512px; margin-bottom: 20px; padding: 5px;">
+        <div class="row">
+            <div class="col-md-12">
+                Account balance:
+                <br />
+                <input type="number" name="Balance" value="@Model.Balance" step="any" style="width: 182px;" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                Updating the balance will add a new transaction to make up the difference between the current calculated
+                balance and this new balance, and it will set all existing transactions on this account to "Reconciled."
+            </div>
+        </div>
+
+
+        <div style="min-height: 5px;"></div>
+        <div class="row">
+            <div class="col-md-2">
+                <input type="hidden" value="@Model.Id" name="Id" />
+
+                <input type="submit" value="Update balance" class="btn btn-default" />
+            </div>
+
+        </div>
+        </div>
+        }
+
+        or @Html.ActionLink("Delete this account.", "DeleteAccount", "Household", new { id = Model.Id }, new { })
+
+<br />
+<br />
+@Html.ActionLink("Back", "Index", "Household")
+
