@@ -658,6 +658,8 @@ namespace BugTrackerForTemplate.Controllers
             household.Categories.Add(category);
             db.Entry(household).State = EntityState.Modified;
 
+            db.SaveChanges();
+
             return RedirectToAction("EditCategories", "Household", new { id = model.HouseholdId });
         }
 
@@ -811,8 +813,9 @@ namespace BugTrackerForTemplate.Controllers
                 //transaction.ReconciledTransactions.Add(item);
             }
 
-
-            //db.Transactions.Add(transaction);
+            account.Balance += difference;
+            db.Entry(account).State = EntityState.Modified;
+            db.Transactions.Add(transaction);
             
             //The following code is not necessary -- its functionality was combined with the foreach loop above
             //var transactions = db.Transactions.Where(i => i.AccountId == account.Id).ToList();

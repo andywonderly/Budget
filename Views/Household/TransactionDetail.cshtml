@@ -16,8 +16,7 @@
         src="https://cdn.datatables.net/1.10.9/js/jquery.dataTables.min.js"></script>
 
 <h2>@ViewBag.Title</h2>
-<h3>Account: @Model.First().AccountName</h3>
-<h3>Balance: $@Model.First().AccountBalance</h3>
+<h3>@Model.First().AccountName // $@Model.First().AccountBalance</h3>
 
 <hr />
 
@@ -71,6 +70,13 @@
                     @Html.DisplayFor(modelItem => item.Created.LocalDateTime)
                 </td>
                 <td>
+                    @if(item.Amount.ToString().IndexOf(".") == -1)
+                    {
+                        Html.Raw("$" + item.Amount.ToString() + ".00");
+                    } else
+                    {
+                        Html.Raw("$" + item.Amount.ToString().Substring(0, item.Amount.ToString().IndexOf("." + 2)));
+                    }
                     @Html.DisplayFor(modelItem => item.Amount)
                 </td>
                 <td>
@@ -82,9 +88,7 @@
                 <td>
                     @Html.DisplayFor(modelItem => item.Void)    
                 </td>
-                @*<td>
-                    none
-                </td>*@
+
                 <td>
                     @Html.DisplayFor(model => item.Reconciled)
                 </td>
