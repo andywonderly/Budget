@@ -632,6 +632,7 @@ namespace BugTrackerForTemplate.Controllers
             Household household = db.Households.Find(id);
             CategoryViewModel model = new CategoryViewModel();
             model.Categories = household.Categories.ToList();
+            model.HouseholdId = household.Id;
             return View(model);
         }
 
@@ -640,6 +641,24 @@ namespace BugTrackerForTemplate.Controllers
         public ActionResult EditCategories([Bind(Include ="Id")] CategoryViewModel model)
         {
             return RedirectToAction("Index", "Household");
+        }
+
+        [Authorize]
+        public ActionResult NewCategory([Bind(Include ="Name,HouseholdId")] CategoryViewModel model)
+        {
+            Household household = db.Households.Find(model.HouseholdId);
+
+            Category category = new Category
+            {
+                Household_Id = model.HouseholdId,
+                Name = model.Name,
+            };
+
+            db.Categories.Add(category);
+            household.Categories.Add(category);
+            db.Entry(household).State = EntityState.Modified;
+
+            return RedirectToAction("EditCategories", "Household", new { id = model.HouseholdId });
         }
 
         [Authorize]
@@ -655,6 +674,9 @@ namespace BugTrackerForTemplate.Controllers
                 Id = category.Id,
                 HouseholdId = household.Id,
             };
+
+
+
             return View(model);
         }
 
