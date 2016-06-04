@@ -737,6 +737,55 @@ namespace BugTrackerForTemplate.Controllers
             //NEED CODE TO WHERE AVAILABLE TRANSACTION CATEGORIES ARE ONLY CATEGORIES WHERE DELETED == FALSE
         }
 
+        public string Dollarize(double amount)
+        {
+            string result ="";
+            bool negative = false;
+
+            if (amount < 0)
+            {
+                amount *= -1;
+                negative = true;
+            }
+
+            var a = amount.ToString().IndexOf(".");
+            var b = amount.ToString().Substring(amount.ToString().IndexOf(".") + 1, amount.ToString().Length - amount.ToString().IndexOf(".") - 1);
+            var c = amount.ToString().Substring(amount.ToString().IndexOf(".") + 1, amount.ToString().Length - amount.ToString().IndexOf(".") - 1).Length;
+
+            if (amount.ToString().IndexOf(".") == -1)
+            {
+                result = "$" + amount.ToString() + ".00";
+            }
+            else if (amount.ToString().Substring(amount.ToString().IndexOf(".") + 1, amount.ToString().Length - amount.ToString().IndexOf(".") - 1).Length >= 2)
+            {
+                result = "$" + amount.ToString().Substring(0, amount.ToString().IndexOf(".") + 3);
+            }
+            else if (amount.ToString().Substring(amount.ToString().IndexOf(".") + 1, amount.ToString().Length - amount.ToString().IndexOf(".") - 1).Length == 1)
+            {
+                result = amount.ToString() + "0";
+            } else
+            {
+                result = "$" + amount.ToString();
+            }
+
+            //If the amount was negative, add a - in front.  I tried adding a leading space if it was positive, but
+            //the space did not appear to be displaying, so I removed the code.
+            if (negative)
+            {
+                result = "-" + result;
+            } 
+
+            return result;
+        }
+
+        //Overload in case somehow a float is sent instead of a double.  No idea if this will happen, just covering my arse.
+        //I'm not even sure if sending a float would cause an error otherwise.  It might, I just don't know.
+        public string Dollarize(float amount)
+        {
+            double amount2 = amount;
+            return Dollarize(amount2);
+        }
+
         [Authorize]
         public ActionResult TransactionDetail(int id)
         {
@@ -745,15 +794,17 @@ namespace BugTrackerForTemplate.Controllers
             List<TransactionViewModel> transactions = new List<TransactionViewModel>();
             var transactions2 = account.Transactions.ToList();
 
-            foreach(var item in transactions2)
+            foreach (var item in transactions2)
             {
+
+
                 TransactionViewModel temp = new TransactionViewModel
                 {
                     Id = item.Id,
                     Name = item.Name,
                     OwnerUserName = db.Users.Find(item.OwnerUserId).DisplayName,
-                    Amount = item.Amount,
-                    Balance = item.Balance,
+                    AmountString = Dollarize(item.Amount),
+                    BalanceString = Dollarize(item.Balance),
                     Expenditure = item.Expenditure,
                     Reconciled = item.Reconciled,
                     Void = item.Void,
@@ -762,7 +813,7 @@ namespace BugTrackerForTemplate.Controllers
                     //Storing the account name and balance here is inefficient, but it's the quickest
                     //way to get it done at the moment.
                     AccountName = account.Name,
-                    AccountBalance = account.Balance,
+                    AccountBalanceString = Dollarize(account.Balance),
                 };
 
                 transactions.Add(temp);

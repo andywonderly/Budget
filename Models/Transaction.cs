@@ -30,12 +30,14 @@ namespace Budget.Models
         public string OwnerUserId { get; set; }
         public string OwnerUserName { get; set; }
         public float Amount { get; set; }
+        public string AmountString { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public int CategoryId { get; set; }
         public string Category { get; set; }
         public int AccountId { get; set; }
         public float Balance { get; set; }
+        public string BalanceString { get; set; }
         public bool Reconciled { get; set; }
         public bool Expenditure { get; set; }
         public IEnumerable<Category> Categories { get; set; }
@@ -44,5 +46,6 @@ namespace Budget.Models
 
         public string AccountName { get; set; }
         public float AccountBalance { get; set; }
+        public string AccountBalanceString { get; set; }
     }
 }
