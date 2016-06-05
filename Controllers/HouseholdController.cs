@@ -652,7 +652,21 @@ namespace BugTrackerForTemplate.Controllers
             {
                 Household_Id = model.HouseholdId,
                 Name = model.Name,
+                
             };
+
+            //Add a budget item of the same name since category and budget are tied together
+            BudgetItem budgetItem = new BudgetItem
+            {
+                Name = model.Name,
+                CategoryId = category.Id,
+                HouseholdId = household.Id,
+                Void = false,
+                Deleted = false,
+                Created = DateTimeOffset.Now,
+            };
+
+            db.BudgetItems.Add(budgetItem);
 
             db.Categories.Add(category);
             household.Categories.Add(category);
@@ -709,6 +723,9 @@ namespace BugTrackerForTemplate.Controllers
                 Name = category.Name,
 
             };
+
+
+
             return View(model);
         }
 
@@ -719,6 +736,13 @@ namespace BugTrackerForTemplate.Controllers
             Category category = db.Categories.Find(model.Id);
             category.Deleted = true;
             db.Entry(category).State = EntityState.Modified;
+
+            //Deactivate associated budget item
+            BudgetItem budgetItem = db.BudgetItems.FirstOrDefault(n => n.CategoryId == category.Id && n.HouseholdId == category.Household_Id);
+            budgetItem.Deleted = true;
+            budgetItem.Void = true;
+            db.Entry(budgetItem).State = EntityState.Modified;
+
             db.SaveChanges();
 
             return RedirectToAction("EditCategories", "Household", new { id = category.Household_Id });
@@ -932,6 +956,8 @@ namespace BugTrackerForTemplate.Controllers
                     Spent = transactionsTotalSpent,
                 };
             }
+
+            ViewBag.CategoryId = new SelectList(household.Categories, "Id", "Name");
 
             return View(model);
 
