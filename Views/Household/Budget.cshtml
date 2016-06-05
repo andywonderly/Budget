@@ -1,20 +1,11 @@
-﻿@model Budget.Models.ManageHouseholdViewModel
+﻿@model IEnumerable<Budget.Models.BudgetItemViewModel>
 
 @{
     ViewBag.Title = "Home Page";
     Layout = "~/Views/Shared/TemplateLayout.cshtml";
 }
 
-@*<button class="btn-default" onclick="GetChart()">Chart</button>
-
-<div id="MyChart" style="height: 200px;">
-
-    <button class="btn-default" onclick="EditAccountName(1)">Edit Account Name</button>
-    <div id="Account-1" style="height: 256px;"></div>
-    
-</div>*@
-
-<h3 style="display: inline;">Household:  @Html.Raw(Model.Name)</h3> 
+<h3 style="display: inline;">Budget items for household:  @Html.Raw(Model.Name)</h3> 
 <button type="button" data-toggle="collapse" data-target="#HouseholdActions" style="display: inline; border: none; background-color: transparent;">
     <i class="fa fa-edit" style="border: none; background-color: transparent; display:inline;"></i>
 </button>
@@ -24,7 +15,7 @@
     <br />
     @Html.ActionLink("Leave this household", "LeaveHousehold", new { id = Model.Id })
     <br />
-    @Html.ActionLink("Edit budget categories", "EditCategories", new { id = Model.Id })
+    @Html.ActionLink("Edit transaction categories", "EditCategories", new { id = Model.Id })
     <br />
 </div>
 <div>

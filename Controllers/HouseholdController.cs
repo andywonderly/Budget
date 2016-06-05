@@ -497,7 +497,7 @@ namespace BugTrackerForTemplate.Controllers
                 {
                 Id = item.Id,
                 Amount = item.Amount,
-                OwnerUserName = db.Users.Find(item.OwnerUserId).Email,
+                OwnerUserName = db.Users.Find(item.OwnerUserId).DisplayName,
                 Balance = item.Balance,
                 Category = household.Categories.FirstOrDefault(n => n.Id == item.CategoryId).Name,
                 Reconciled = item.Reconciled,
@@ -901,6 +901,40 @@ namespace BugTrackerForTemplate.Controllers
 
             return RedirectToAction("TransactionDetail", "Household", new { id = account.Id });
             
+        }
+
+        [Authorize]
+        public ActionResult Budget(int id)
+        {
+            var currentUserId = System.Web.HttpContext.Current.User.Identity.GetUserId();
+            ApplicationUser currentUser = db.Users.Find(currentUserId);
+
+            Household household = db.Households.Find(currentUser.HouseholdId);
+
+            IEnumerable<BudgetItemViewModel> model = new List<BudgetItemViewModel>();
+            List<BudgetItem> allBudgetItems = db.BudgetItems.Where(c => c.CategoryId == id).ToList();
+            Category category = household.Categories.FirstOrDefault(i => i.Id == id);
+            List<Transaction> transactions = db.Transactions.Where(i => i.CategoryId == id).ToList();
+            double transactionsTotalSpent = 0;
+            
+            foreach(var item in transactions)
+            {
+                transactionsTotalSpent += item.Amount;
+            }
+
+            foreach(var item in allBudgetItems)
+            {
+                BudgetItemViewModel temp = new BudgetItemViewModel
+                {
+                    Amount = item.Amount,
+                    Name = household.Categories.First(i => i.Id == id).Name,
+                    Description = item.Description,
+                    Spent = transactionsTotalSpent,
+                };
+            }
+
+            return View(model);
+
         }
     }
 

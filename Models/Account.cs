@@ -23,6 +23,7 @@ namespace Budget.Models
     {
         public int Id { get; set; }
         public string OwnerUserId { get; set; }
+        public string OwnerUserName { get; set; }
         public DateTimeOffset Created { get; set; }
         public int HouseholdId { get; set; }
         public string Name { get; set; }
