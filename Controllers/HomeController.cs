@@ -159,12 +159,38 @@ namespace BugTrackerForTemplate.Controllers
                 //db.SaveChanges();
             }
 
+            db.Entry(newHousehold).State = EntityState.Modified;
+            db.SaveChanges();
+            //Do this so that the categories are assigned an id that we can access in
+            //the following foreach loop.
+
+            Household newHousehold2 = db.Households.Find(currentUser.HouseholdId);
+
+            foreach (var item in newHousehold2.Categories)
+            {
+                BudgetItem temp = new BudgetItem
+                {
+                    Name = item.Name,
+                    Amount = 0,
+                    CategoryId = item.Id,
+                    Created = DateTimeOffset.Now,
+                    Void = false,
+                    Deleted = false,
+                    HouseholdId = item.Household_Id,
+                    BudgetSet = false,
+
+                };
+
+                db.BudgetItems.Add(temp);
+                newHousehold.BudgetItems.Add(temp);
+            }
+
 
 
             //Set the current user's household Id to the household that was just created & added
             //currentUser.HouseholdId = db.Households.FirstOrDefault(u => u.OwnerUserId == currentUserId && u.Created == household.Created).Id;
             db.Entry(currentUser).State = EntityState.Modified;
-            db.Entry(newHousehold).State = EntityState.Modified;
+            db.Entry(newHousehold2).State = EntityState.Modified;
             db.SaveChanges();
 
             ViewBag.Message = "Household successfully created and joined.";

@@ -10,7 +10,7 @@ namespace Budget.Models
         public int Id { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
-        public float Amount { get; set; }
+        public double Amount { get; set; }
         public string Frequency { get; set; }
         public int HouseholdId { get; set; }
         public DateTimeOffset Created { get; set; }
@@ -19,6 +19,7 @@ namespace Budget.Models
         public bool Void { get; set; }
         public bool Deleted { get; set; }
         public virtual Household Household { get; set; }
+        public bool BudgetSet { get; set; }
     }
 
     public class BudgetItemViewModel
@@ -26,7 +27,7 @@ namespace Budget.Models
         public int Id { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
-        public float Amount { get; set; }
+        public double Amount { get; set; }
         public string Frequency { get; set; }
         public int HouseholdId { get; set; }
         public string HouseholdName { get; set; }
@@ -37,7 +38,26 @@ namespace Budget.Models
         public bool Void { get; set; }
         public bool Deleted { get; set; }
         public double Spent { get; set; }
+        public SpentBudgeted SpentBudgeted { get; set; }
         //public virtual Household Household { get; set; }
+        public int SpentPercent { get; set; }
+        public int UnspentPercent { get; set; }
+        public string SpentPercentPx { get; set; }
+        public string UnspentPercentPx { get; set; }
+        
 
+    }
+
+    public class SpentBudgeted
+    {
+        public double Spent { get; set; }
+        public double Budgeted { get; set; }
+    }
+
+    public class EditBudgetViewModel
+    {
+        public int Id { get; set; }
+        public double Amount { get; set; }
+        public int HouseholdId { get; set; }
     }
 }

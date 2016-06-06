@@ -425,18 +425,45 @@ namespace BugTrackerForTemplate.Controllers
             return View(model);
         }
 
-        public ActionResult GetChart()
+        public ActionResult GetChart(SpentBudgeted spentBudgeted)
         {
+            int spentInt = (int)spentBudgeted.Spent;
+            int budgetedInt = (int)spentBudgeted.Budgeted;
 
-            var data = new[] { new {label = "2008", value = 20},
-            new { label = "2008", value = 5 },
-            new { label = "2010", value = 7 },
-            new { label = "2011", value = 10 },
-            new { label = "2012", value = 20}};
+
+            var data = new[] 
+            {
+                new {label = "Spent", value = spentInt },
+                new { label = "Budgeted", value = budgetedInt },
+            };
+
+            ViewBag.Chart = Content(JsonConvert.SerializeObject(data),
+            "application/json");
 
             return Content(JsonConvert.SerializeObject(data),
             "application/json");
         }
+
+        public ActionResult GetChart2(double Spent, double Budgeted)
+        {
+            int spentInt = (int)Spent;
+            int budgetedInt = (int)Budgeted;
+
+
+            var data = new[]
+            {
+                new {label = "Spent", value = spentInt },
+                new { label = "Budgeted", value = budgetedInt },
+            };
+
+            ViewBag.Chart = Content(JsonConvert.SerializeObject(data),
+            "application/json");
+
+            return Content(JsonConvert.SerializeObject(data),
+            "application/json");
+        }
+
+
 
         [Authorize]
         public ActionResult _DeleteAccount(int id)
@@ -521,6 +548,7 @@ namespace BugTrackerForTemplate.Controllers
 
             TransactionViewModel model = new TransactionViewModel
             {
+                Id = transaction.Id,
                 Amount = transaction.Amount,
                 Balance = transaction.Balance,
                 CategoryId = transaction.CategoryId,
@@ -664,6 +692,9 @@ namespace BugTrackerForTemplate.Controllers
                 Void = false,
                 Deleted = false,
                 Created = DateTimeOffset.Now,
+                BudgetSet = false,
+                Amount = 0,
+                
             };
 
             db.BudgetItems.Add(budgetItem);
@@ -928,39 +959,85 @@ namespace BugTrackerForTemplate.Controllers
         }
 
         [Authorize]
-        public ActionResult Budget(int id)
+        public ActionResult Budget()
         {
             var currentUserId = System.Web.HttpContext.Current.User.Identity.GetUserId();
             ApplicationUser currentUser = db.Users.Find(currentUserId);
 
             Household household = db.Households.Find(currentUser.HouseholdId);
 
-            IEnumerable<BudgetItemViewModel> model = new List<BudgetItemViewModel>();
-            List<BudgetItem> allBudgetItems = db.BudgetItems.Where(c => c.CategoryId == id).ToList();
-            Category category = household.Categories.FirstOrDefault(i => i.Id == id);
-            List<Transaction> transactions = db.Transactions.Where(i => i.CategoryId == id).ToList();
-            double transactionsTotalSpent = 0;
+            List<BudgetItemViewModel> protoModel = new List<BudgetItemViewModel>();
             
-            foreach(var item in transactions)
-            {
-                transactionsTotalSpent += item.Amount;
-            }
+            List<BudgetItem> budgetItems = db.BudgetItems.Where(c => c.Deleted == false && c.HouseholdId == currentUser.HouseholdId).ToList();
+            //Category category = household.Categories.FirstOrDefault(i => i.Id == id);
+            //List<Transaction> transactions = db.Transactions.Where(i => i.CategoryId == id).ToList();
+            //double transactionsTotalSpent = 0;
+            
+            //foreach(var item in transactions)
+            //{
+            //    transactionsTotalSpent += item.Amount;
+            //}
 
-            foreach(var item in allBudgetItems)
+            foreach(var item in budgetItems)
             {
+                Category tempCategory = household.Categories.FirstOrDefault(c => c.Id == item.CategoryId);
+
+                List<Transaction> tempTransactions = db.Transactions.Where(c => c.CategoryId == tempCategory.Id && c.Name != "Initial balance").ToList();
+
+                double tempSpent = 0;
+
+                foreach(var item2 in tempTransactions)
+                {
+                    tempSpent += item2.Amount;
+                }
+
+                var pixelWidth = 500;
+
                 BudgetItemViewModel temp = new BudgetItemViewModel
                 {
+                    Id = item.Id,
                     Amount = item.Amount,
-                    Name = household.Categories.First(i => i.Id == id).Name,
+                    Name = household.Categories.First(i => i.Id == item.CategoryId).Name,
                     Description = item.Description,
-                    Spent = transactionsTotalSpent,
+                    Spent = tempSpent,
+                    HouseholdName = household.Name,
+                    CategoryName = tempCategory.Name,
+                    CategoryId = tempCategory.Id,
+                    //SpentBudgeted = new SpentBudgeted { Spent = transactionsTotalSpent, Budgeted = item.Amount },
+                    SpentPercent = (-1) * (int)((tempSpent / item.Amount) * 512),
+                    UnspentPercent = pixelWidth - (-1) * (int)((tempSpent / item.Amount) * pixelWidth),
+                    SpentPercentPx = ((-1) * (int)((tempSpent / item.Amount) * pixelWidth)).ToString() + "px",
+                    UnspentPercentPx = (pixelWidth - (-1) * (int)((tempSpent / item.Amount) * pixelWidth)).ToString() + "px",
+
                 };
+
+                //In case the amount spent exceeds budget, we need to make sure we don't get weird numbers
+                if(temp.SpentPercent >= (100 * pixelWidth))
+                {
+                    temp.SpentPercentPx = pixelWidth.ToString() + "px";
+                    temp.UnspentPercentPx = 0.ToString() + "px";
+                }
+
+                protoModel.Add(temp);
             }
 
             ViewBag.CategoryId = new SelectList(household.Categories, "Id", "Name");
 
+            ViewBag.BudgetCharts = true;
+            IEnumerable<BudgetItemViewModel> model = protoModel.ToList();
+            ViewBag.Charts = protoModel.ToList();
             return View(model);
 
+        }
+
+        [Authorize]
+        public ActionResult EditBudget([Bind(Include ="Id, HouseholdId, Amount")] EditBudgetViewModel model)
+        {
+            BudgetItem budgetItem = db.BudgetItems.Find(model.Id);
+            budgetItem.Amount = model.Amount;
+            db.Entry(budgetItem).State = EntityState.Modified;
+            db.SaveChanges();
+            return RedirectToAction("Budget", new { id = model.HouseholdId });
         }
     }
 

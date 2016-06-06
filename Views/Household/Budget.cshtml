@@ -7,4 +7,33 @@
 
 <h3>Budget items for household:  @Html.Raw(Model.First().HouseholdName)</h3> 
 
-@Html.DropDownList("CategoryId", null, htmlAttributes: new { @class = "form-control" })
+@foreach(var item in Model)
+{
+    <div class="row" style="width: 512px; border: 3px solid black; border-radius: 5px; margin-top: 5px; margin-bottom: 5px; padding: 10px;">
+        Budget item name: @item.Name
+        <br />
+                @using (Html.BeginForm("EditBudget", "Household", FormMethod.Post, new { enctype = "Multipart/form-data" }))
+                {
+                    <p style="display: inline;">Budget amount: $</p>
+                    <input type="number" step="any" value="@item.Amount" name="Amount" style="display: inline" placeholder="@item.Amount"/>
+                    <input type="hidden" name="HouseholdId" value="@Model.First().HouseholdId" />
+                    <input type="hidden" name="Id" value="@item.Id" >
+                    <input type="submit" value="Edit" class="btn btn-default" style="display: inline; height: 30px;"/>
+                }
+        
+        Amount spent: $@item.Spent
+        <br />
+        <br />
+        Spent (red) vs Remaining Budget (green):
+        <div class="row">
+            <div style="border-radius: 5px; display: inline-block; margin-right: -5px; margin-left: 8px; width: @item.SpentPercentPx; height: 24px; background-color: #ef3d47"></div>
+            <div style="border-radius: 5px; display: inline-block; width: @item.UnspentPercentPx; height: 24px ; background-color: lightgreen"></div>
+        </div>
+    </div>
+    
+
+
+
+
+
+}

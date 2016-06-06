@@ -14,6 +14,9 @@ namespace Budget.Models
         public bool Deleted { get; set; }
         public bool Stock { get; set; }
         public virtual Household Household { get;set; }
+        public double BudgetAmount { get; set; }
+        public double Spent { get; set; }
+        public bool BudgetDefined { get; set; }
     }
 
     public class CategoryViewModel
@@ -22,6 +25,8 @@ namespace Budget.Models
         public int HouseholdId { get; set; }
         public string Name { get; set; }
         public List<Category> Categories { get; set; }
+        public double BudgetAmount { get; set; }
+        public double Spent { get; set; }
     }
 
     public class EditCategoryViewModel
@@ -30,5 +35,7 @@ namespace Budget.Models
         public int HouseholdId { get; set; }
         public string Name { get; set; }
         public bool Stock { get; set; }
+        public double BudgetAmount { get; set; }
+        public double Spent { get; set; }
     }
 }

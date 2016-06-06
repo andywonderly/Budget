@@ -379,6 +379,7 @@
     <Content Include="Views\Household\DeleteCategory.cshtml" />
     <Content Include="Views\Household\TransactionDetail.cshtml" />
     <Content Include="Views\Household\Budget.cshtml" />
+    <Content Include="Views\Household\GetChart.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
