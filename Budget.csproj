@@ -380,6 +380,8 @@
     <Content Include="Views\Household\TransactionDetail.cshtml" />
     <Content Include="Views\Household\Budget.cshtml" />
     <Content Include="Views\Household\GetChart.cshtml" />
+    <Content Include="Views\Home\InitialAccount.cshtml" />
+    <Content Include="Views\Manage\ChangeDisplayName.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

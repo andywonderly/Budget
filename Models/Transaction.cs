@@ -43,7 +43,7 @@ namespace Budget.Models
         public IEnumerable<Category> Categories { get; set; }
         public DateTimeOffset Created { get; set; }
         public bool Void { get; set; }
-
+        public string ReconciledBalance { get; set; }
         public string AccountName { get; set; }
         public float AccountBalance { get; set; }
         public string AccountBalanceString { get; set; }

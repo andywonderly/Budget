@@ -17,6 +17,7 @@ namespace Budget.Controllers
     {
         private ApplicationSignInManager _signInManager;
         private ApplicationUserManager _userManager;
+        private ApplicationDbContext db = new ApplicationDbContext();
 
         public ManageController()
         {
@@ -309,6 +310,40 @@ namespace Budget.Controllers
         {
             // Request a redirect to the external login provider to link a login for the current user
             return new AccountController.ChallengeResult(provider, Url.Action("LinkLoginCallback", "Manage"), User.Identity.GetUserId());
+        }
+
+        //GET: ChangeDisplayName
+        [Authorize]
+        public ActionResult ChangeDisplayName()
+        {
+            var currentUserId = User.Identity.GetUserId();
+            var currentUser = db.Users.Find(currentUserId);
+            return View(currentUser);
+
+        }
+
+        //
+        //POST:  ChangeDisplayName
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> ChangeDisplayName(IndexViewModel user)
+        {
+            ApplicationUser Model = UserManager.FindById(User.Identity.GetUserId());
+
+            Model.DisplayName = user.DisplayName;
+            Model.FirstName = user.FirstName;
+            Model.LastName = user.LastName;
+
+            IdentityResult result = await UserManager.UpdateAsync(Model);
+
+            if (!result.Succeeded)
+            {
+                AddErrors(result);
+
+            }
+
+            return RedirectToAction("Index"); // <--Probably incorrect, will fix later
         }
 
         //

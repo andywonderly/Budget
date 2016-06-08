@@ -26,6 +26,9 @@ namespace BugTrackerForTemplate.Controllers
             var currentUserId = System.Web.HttpContext.Current.User.Identity.GetUserId();
             ApplicationUser currentUser = db.Users.Find(currentUserId);
 
+            if (currentUser.HouseholdId == null)
+                return RedirectToAction("Index", "Home");
+
             Household household = db.Households.Find(currentUser.HouseholdId);
 
             List<ApplicationUser> members = new List<ApplicationUser>();
@@ -61,11 +64,16 @@ namespace BugTrackerForTemplate.Controllers
         }
 
         [Authorize]
-        public ActionResult Invite(int Id)
+        public ActionResult Invite(int id)
         {
+            var currentUserId = System.Web.HttpContext.Current.User.Identity.GetUserId();
+            ApplicationUser currentUser = db.Users.Find(currentUserId);
+
+            if (id != currentUser.HouseholdId)
+                return RedirectToAction("Index", "Household");
 
             InvitationViewModel model = new InvitationViewModel();
-            model.HouseholdId = Id;
+            model.HouseholdId = id;
             return View(model);
 
         }
@@ -75,6 +83,10 @@ namespace BugTrackerForTemplate.Controllers
         {
             var currentUserId = System.Web.HttpContext.Current.User.Identity.GetUserId();
             ApplicationUser currentUser = db.Users.Find(currentUserId);
+
+            if (model.HouseholdId != currentUser.HouseholdId)
+                return RedirectToAction("Index", "Household");
+
             Household household = db.Households.Find(currentUser.HouseholdId);
             //ApplicationUser invited = new ApplicationUser();
 
@@ -675,6 +687,8 @@ namespace BugTrackerForTemplate.Controllers
         public ActionResult NewCategory([Bind(Include ="Name,HouseholdId")] CategoryViewModel model)
         {
             Household household = db.Households.Find(model.HouseholdId);
+            var currentUserId = System.Web.HttpContext.Current.User.Identity.GetUserId();
+            ApplicationUser currentUser = db.Users.Find(currentUserId);
 
             Category category = new Category
             {
@@ -682,27 +696,53 @@ namespace BugTrackerForTemplate.Controllers
                 Name = model.Name,
                 
             };
+            db.Categories.Add(category);
+            db.SaveChanges();
+
+            Category newCategory = db.Categories.First(i => i.Household_Id == category.Household_Id && i.Name == model.Name);
 
             //Add a budget item of the same name since category and budget are tied together
             BudgetItem budgetItem = new BudgetItem
             {
                 Name = model.Name,
-                CategoryId = category.Id,
+                CategoryId = newCategory.Id,
                 HouseholdId = household.Id,
                 Void = false,
                 Deleted = false,
                 Created = DateTimeOffset.Now,
                 BudgetSet = false,
                 Amount = 0,
-                
             };
+
+            
 
             db.BudgetItems.Add(budgetItem);
 
-            db.Categories.Add(category);
+            
             household.Categories.Add(category);
             db.Entry(household).State = EntityState.Modified;
 
+            db.SaveChanges();
+
+            
+            Account account = db.Accounts.First(i => i.HouseholdId == household.Id);
+
+            //Give our category a dummy transaction.
+            Transaction transaction = new Transaction
+            {
+                CategoryId = newCategory.Id,
+                Name = "Placeholder",
+                Amount = 0,
+                Reconciled = false,
+                Void = true,
+                Balance = 0,
+                Created = DateTimeOffset.Now,
+                OwnerUserId = currentUserId,
+                Expenditure = true,
+                AccountId = account.Id,
+            };
+
+            db.Transactions.Add(transaction);
             db.SaveChanges();
 
             return RedirectToAction("EditCategories", "Household", new { id = model.HouseholdId });
@@ -744,35 +784,54 @@ namespace BugTrackerForTemplate.Controllers
             return RedirectToAction("EditCategories", "Household", new { id = household.Id });
         }
 
+        //[Authorize]
+        //public ActionResult DeleteCategory(int id)
+        //{
+        //    Category category = db.Categories.Find(id);
+        //    EditCategoryViewModel model = new EditCategoryViewModel
+        //    {
+        //        Id = category.Id,
+        //        Name = category.Name,
+
+        //    };
+
+
+
+        //    return View(model);
+        //}
+
+        //[Authorize]
+        //[HttpPost]
+        //public ActionResult DeleteCategory([Bind(Include ="Id")] EditCategoryViewModel model)
+        //{
+        //    Category category = db.Categories.Find(model.Id);
+        //    category.Deleted = true;
+        //    db.Entry(category).State = EntityState.Modified;
+
+        //    //Deactivate associated budget item
+        //    BudgetItem budgetItem = db.BudgetItems.FirstOrDefault(n => n.CategoryId == category.Id && n.HouseholdId == category.Household_Id);
+        //    budgetItem.Deleted = true;
+        //    budgetItem.Void = true;
+        //    db.Entry(budgetItem).State = EntityState.Modified;
+
+        //    db.SaveChanges();
+
+        //    return RedirectToAction("EditCategories", "Household", new { id = category.Household_Id });
+        //    //NEED CODE TO WHERE AVAILABLE TRANSACTION CATEGORIES ARE ONLY CATEGORIES WHERE DELETED == FALSE
+        //}
+
         [Authorize]
         public ActionResult DeleteCategory(int id)
         {
             Category category = db.Categories.Find(id);
-            EditCategoryViewModel model = new EditCategoryViewModel
-            {
-                Id = category.Id,
-                Name = category.Name,
-
-            };
-
-
-
-            return View(model);
-        }
-
-        [Authorize]
-        [HttpPost]
-        public ActionResult DeleteCategory([Bind(Include ="Id")] EditCategoryViewModel model)
-        {
-            Category category = db.Categories.Find(model.Id);
             category.Deleted = true;
             db.Entry(category).State = EntityState.Modified;
 
             //Deactivate associated budget item
-            BudgetItem budgetItem = db.BudgetItems.FirstOrDefault(n => n.CategoryId == category.Id && n.HouseholdId == category.Household_Id);
-            budgetItem.Deleted = true;
-            budgetItem.Void = true;
-            db.Entry(budgetItem).State = EntityState.Modified;
+            //BudgetItem budgetItem = db.BudgetItems.FirstOrDefault(n => n.CategoryId == category.Id && n.HouseholdId == category.Household_Id);
+            //budgetItem.Deleted = true;
+            //budgetItem.Void = true;
+            //db.Entry(budgetItem).State = EntityState.Modified;
 
             db.SaveChanges();
 
@@ -847,7 +906,16 @@ namespace BugTrackerForTemplate.Controllers
             Account account = db.Accounts.FirstOrDefault(h => h.Id == id);
             Household household = db.Households.Find(account.HouseholdId);
             List<TransactionViewModel> transactions = new List<TransactionViewModel>();
-            var transactions2 = account.Transactions.ToList();
+            var transactions2 = account.Transactions.Where(n => n.Name != "Placeholder").ToList();
+
+            var reconciledTransactions = transactions2.Where(r => r.Reconciled == true);
+
+            double reconciledBalance = 0;
+
+            foreach(var item in reconciledTransactions)
+            {
+                reconciledBalance += item.Amount;
+            }
 
             foreach (var item in transactions2)
             {
@@ -865,6 +933,7 @@ namespace BugTrackerForTemplate.Controllers
                     Void = item.Void,
                     Created = item.Created,
                     Category = household.Categories.FirstOrDefault(n => n.Id == item.CategoryId).Name,
+                    ReconciledBalance = Dollarize(reconciledBalance),
                     //Storing the account name and balance here is inefficient, but it's the quickest
                     //way to get it done at the moment.
                     AccountName = account.Name,
@@ -964,6 +1033,9 @@ namespace BugTrackerForTemplate.Controllers
             var currentUserId = System.Web.HttpContext.Current.User.Identity.GetUserId();
             ApplicationUser currentUser = db.Users.Find(currentUserId);
 
+            if (currentUser.HouseholdId == null)
+                return RedirectToAction("Index", "Home");
+
             Household household = db.Households.Find(currentUser.HouseholdId);
 
             List<BudgetItemViewModel> protoModel = new List<BudgetItemViewModel>();
@@ -982,14 +1054,25 @@ namespace BugTrackerForTemplate.Controllers
             {
                 Category tempCategory = household.Categories.FirstOrDefault(c => c.Id == item.CategoryId);
 
-                List<Transaction> tempTransactions = db.Transactions.Where(c => c.CategoryId == tempCategory.Id && c.Name != "Initial balance").ToList();
+                var allTransactions = db.Transactions.ToList();
+                List<Transaction> tempTransactions = new List<Transaction>();
+                //bool transactionsExist = false;
+
+                if (db.Transactions.Any(c => c.CategoryId == tempCategory.Id && c.Name != "Initial balance"))
+                {
+                    //transactionsExist = true;
+                    tempTransactions = allTransactions.Where(c => c.CategoryId == tempCategory.Id && c.Name != "Initial balance").ToList();
+                }
 
                 double tempSpent = 0;
 
-                foreach(var item2 in tempTransactions)
-                {
-                    tempSpent += item2.Amount;
-                }
+
+                    foreach (var item2 in tempTransactions)
+                    {
+                        tempSpent += item2.Amount;
+                    }
+                
+                
 
                 var pixelWidth = 500;
 
@@ -1012,11 +1095,19 @@ namespace BugTrackerForTemplate.Controllers
                 };
 
                 //In case the amount spent exceeds budget, we need to make sure we don't get weird numbers
-                if(temp.SpentPercent >= (100 * pixelWidth))
+                if( (-1 * temp.Spent) > temp.Amount)
                 {
                     temp.SpentPercentPx = pixelWidth.ToString() + "px";
                     temp.UnspentPercentPx = 0.ToString() + "px";
                 }
+
+                if(temp.UnspentPercent > pixelWidth)
+                {
+                    temp.UnspentPercentPx = pixelWidth.ToString() + "px";
+                }
+
+                //Visualizations get strange when the budget amount is 0 or negative and the amount spent is greater than
+                //the amount remaining.
 
                 protoModel.Add(temp);
             }
@@ -1038,6 +1129,28 @@ namespace BugTrackerForTemplate.Controllers
             db.Entry(budgetItem).State = EntityState.Modified;
             db.SaveChanges();
             return RedirectToAction("Budget", new { id = model.HouseholdId });
+        }
+
+        [Authorize]
+        public ActionResult ReconcileTransaction(int id)
+        {
+            Transaction transaction = db.Transactions.Find(id);
+            transaction.Reconciled = true;
+            db.Entry(transaction).State = EntityState.Modified;
+            db.SaveChanges();
+
+            return RedirectToAction("TransactionDetail", "Household", new { id = transaction.AccountId });
+        }
+
+        [Authorize]
+        public ActionResult UnreconcileTransaction(int id)
+        {
+            Transaction transaction = db.Transactions.Find(id);
+            transaction.Reconciled = false;
+            db.Entry(transaction).State = EntityState.Modified;
+            db.SaveChanges();
+
+            return RedirectToAction("TransactionDetail", "Household", new { id = transaction.AccountId });
         }
     }
 

@@ -23,6 +23,8 @@
         
         Amount spent: $@item.Spent
         <br />
+        Amount remaining: $@Html.Raw(item.Amount - (-1 * item.Spent))
+        <br />
         <br />
         Spent (red) vs Remaining Budget (green):
         <div class="row">

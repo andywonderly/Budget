@@ -7,21 +7,22 @@
 <div class="row">
     <div class="col-md-4">
 
-        <h3>Your Households</h3>
+        <h3 style="margin-left: 22px;">Welcome to Budget.</h3>
     </div>
     </div>
-<div class="row">
-    <div class="col-md-4" style="background-color: lightgray; padding: 5px;">
-        @Html.ActionLink("Create a new household or view invitations to another household", "CreateJoinHousehold", "Home")
-    </div>
-</div>
+@*<div class="row" style="padding: 15px; font-size: 1.25em;">
+        @Html.ActionLink("Manage your household: " + Model.Household.Name, "Index", "Household", new { id = Model.Household.Id }, new { })
+    <br />
+        @Html.ActionLink("Create a new household or view invitations to another household (" + Model.Invitations.Count.ToString() + " invitations)", "CreateJoinHousehold", "Home")
+    
+</div>*@
     @if (Model.Household != null)
     {
         @*DROPDOWN FOR OTHER HOUSEHOLDS*@
         @*Browser cookie for last visited household or if a default household is set*@
-        <div class="row">
-            <div class="col-md-4">
-                @Html.ActionLink(Model.Household.Name + " [Manage]", "Index", "Household", new { id = Model.Household.Id }, new { })
+        <div class="row" style="width: 512px; border: 3px solid black; border-radius: 5px; padding: 5px; margin-left: 2px;">
+            <div class="col-md-12" style="font-size: 1.25em">
+                @Html.ActionLink("Manage your household: " + Model.Household.Name, "Index", "Household", new { id = Model.Household.Id }, new { })
                 <br />
                 Members: (@Html.Raw(Model.Household.Members.Count))
                 <br />
@@ -31,34 +32,14 @@
     }
     else
     {
-        <div class="row">
+        <div class="row" style="width: 512px; border: 3px solid black; border-radius: 5px; padding: 20px; margin-left: 2px;">
+            Manage household:
+            <br />
             You are not a member of any households.
         </div>
     }
-
-
-<div class="row">
-    <div class="col-md-4">
-        <h5>@Html.ActionLink("Your invitations (" + Html.Raw(Model.Invitations.Count) + ")", "CreateJoinHousehold", "Home")</h5>
-    </div>
+<div style="font-size: 1.1em; margin-left: 2px; margin-top: 20px; margin-left: 22px;">
+    ...or @Html.ActionLink("Create a new household or view invitations to another household (" + Model.Invitations.Count.ToString() + " invitations)", "CreateJoinHousehold", "Home")
 </div>
-@*@if (Model.Invitations.Count > 0)
-{
-    foreach (var item in Model.Invitations)
-    {
-        <div class="row">
-            <div class="col-md-4">
-                Invited to @Html.Raw(item.HouseholdName) by @Html.Raw(item.OwnerUserId)
-                @Html.ActionLink("Accept", "Accept", "Household", new { id = item.HouseholdId }, new { })
-                // @Html.ActionLink("Dismiss", "Dismiss", "Household", new { id = item.HouseholdId }, new { })
-            </div>
-        </div>
-    }
-} else
-{
-    <div class="row">
-        <div class="col-md-4">
-            You have no pending invitations.
-        </div>
-    </div>
-}*@
+
+    

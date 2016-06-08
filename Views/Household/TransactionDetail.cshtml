@@ -16,11 +16,12 @@
         src="https://cdn.datatables.net/1.10.9/js/jquery.dataTables.min.js"></script>
 
 <h2>@ViewBag.Title</h2>
-<h3>"@Model.First().AccountName" // @Model.First().AccountBalanceString</h3>
-
+<h3>"@Model.First().AccountName"</h3>
+<h4>Total balance: @Model.First().AccountBalanceString</h4>
+<h4>Reconciled balance: @Model.First().ReconciledBalance</h4>
 <hr />
 
-<table class="table" id="mytable>"
+<table class="table" id="mytable">
     <thead>
         <tr>
             <th>
@@ -96,7 +97,16 @@
                     {
                         @Html.ActionLink("Restore", "RestoreTransaction", "Household", new { id = item.Id }, new { })
                     }
-                    
+                    //
+                    @if (item.Reconciled == false)
+                    {
+                        @Html.ActionLink("Reconcile", "ReconcileTransaction", "Household", new { id = item.Id }, new { })
+                    }
+                    else
+                    {
+                        @Html.ActionLink("Unreconcile", "UnreconcileTransaction", "Household", new { id = item.Id }, new { })
+                    }
+
                 </td>
             </tr>
         }

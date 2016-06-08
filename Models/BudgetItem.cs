@@ -44,6 +44,7 @@ namespace Budget.Models
         public int UnspentPercent { get; set; }
         public string SpentPercentPx { get; set; }
         public string UnspentPercentPx { get; set; }
+        public double ReconciledBalance { get; set; }
         
 
     }

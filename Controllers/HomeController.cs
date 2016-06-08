@@ -194,7 +194,25 @@ namespace BugTrackerForTemplate.Controllers
             db.SaveChanges();
 
             ViewBag.Message = "Household successfully created and joined.";
-            return RedirectToAction("Index","Household");
+            //return RedirectToAction("Index","Household");
+            return RedirectToAction("InitialAccount", new { id = newHousehold2.Id });
+        }
+
+        [Authorize]
+        public ActionResult InitialAccount(int id)
+        {
+            return View();
+        }
+
+        [Authorize]
+        [HttpPost]
+        public ActionResult InitialAccount([Bind(Include ="Name, Balance")] AccountViewModel model)
+        {
+            var currentUserId = System.Web.HttpContext.Current.User.Identity.GetUserId();
+            ApplicationUser currentUser = db.Users.Find(currentUserId);
+
+
+            return RedirectToAction("Index", "Household");
         }
     }
 
