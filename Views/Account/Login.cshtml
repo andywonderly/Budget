@@ -6,6 +6,13 @@
 
 <h2>Welcome to Budget.</h2>
 <div class="row">
+    <div class="col-md-4"  style="background-color:lightgray; border-radius: 5px; font-size: 1.2em;">
+        Budget is a fully-featured budget and checkbook balancing system.  Feel free to create an account, log in,
+        and create your own household to try it out.
+    </div>
+
+</div>
+<div class="row">
     <div class="col-md-4">
         <section id="loginForm">
             @using (Html.BeginForm("Login", "Account", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
